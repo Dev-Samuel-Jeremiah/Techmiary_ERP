@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Schedule Live Class</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ink:#f2f0eb;--surface:#1b1b24;--surface2:#21212e;--surface3:#272736;
+  --rim:rgba(255,255,255,.06);--rim2:rgba(255,255,255,.1);--rim3:rgba(255,255,255,.16);
+  --champagne:#c9a96e;--champagne-lt:#e8c98a;--champagne-dim:rgba(201,169,110,.12);
+  --slate:rgba(255,255,255,.38);--slate2:rgba(255,255,255,.58);
+  --red:#ef6b73;--red-dim:rgba(239,107,115,.12);--red-border:rgba(239,107,115,.24);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#14141b;color:var(--ink);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--rim2);padding:1rem 2rem;display:flex;align-items:center;gap:1rem}
+.topbar a{color:var(--champagne);text-decoration:none;font-size:.9rem}
+.topbar h1{font-size:1.1rem;font-weight:600}
+.container{max-width:560px;margin:3rem auto;padding:0 1.5rem}
+.card{background:var(--surface2);border:1px solid var(--rim2);border-radius:16px;padding:2rem}
+.card-title{font-size:1.2rem;font-weight:600;margin-bottom:1.5rem;display:flex;align-items:center;gap:.6rem}
+.card-title i{color:var(--champagne)}
+.form-group{margin-bottom:1.25rem}
+label{display:block;font-size:.85rem;color:var(--slate2);margin-bottom:.4rem;font-weight:500}
+input,textarea{width:100%;background:var(--surface3);border:1px solid var(--rim3);color:var(--ink);border-radius:8px;padding:.75rem 1rem;font-family:inherit;font-size:.95rem;outline:none;transition:.2s}
+input:focus,textarea:focus{border-color:var(--champagne);box-shadow:0 0 0 3px var(--champagne-dim)}
+textarea{resize:vertical;min-height:80px}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.4rem;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;text-decoration:none;border:none;transition:.2s}
+.btn-primary{background:var(--champagne);color:#111}
+.btn-primary:hover{background:var(--champagne-lt)}
+.btn-ghost{background:transparent;color:var(--slate2);border:1px solid var(--rim3)}
+.btn-ghost:hover{background:var(--rim2);color:var(--ink)}
+.btn-row{display:flex;gap:.75rem;margin-top:1.5rem}
+.alert-error{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="{% url 'liveclass:teacher_live_classes' course.id %}"><i class="bi bi-arrow-left"></i> Live Classes</a>
+  <h1>Schedule New Live Class</h1>
+</div>
+
+<div class="container">
+  {% for msg in messages %}
+    <div class="alert-error">{{ msg }}</div>
+  {% endfor %}
+
+  <div class="card">
+    <div class="card-title"><i class="bi bi-camera-video"></i> New Live Class – {{ course.name }}</div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Class Title *</label>
+        <input type="text" name="title" placeholder="e.g. Introduction to Algorithms" required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" placeholder="What will be covered in this session?"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Scheduled Date & Time *</label>
+        <input type="datetime-local" name="scheduled_at" required>
+      </div>
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Schedule Class</button>
+        <a href="{% url 'liveclass:teacher_live_classes' course.id %}" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

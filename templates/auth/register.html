@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Techmiary LMS</title>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .register-container {
+            background-color: #fff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        form input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        form input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #667eea;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #5a67d8;
+        }
+
+        p {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        p a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        p a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="register-container">
+    <h2>Create Account</h2>
+
+    {% if messages %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        {% for message in messages %}
+            Swal.fire({
+                icon: "{{ message.tags }}".includes("success") ? "success" :
+                      "{{ message.tags }}".includes("error") ? "error" :
+                      "{{ message.tags }}".includes("warning") ? "warning" : "info",
+                title: "{{ message.tags|title }}",
+                text: "{{ message|escapejs }}",
+                confirmButtonColor: "#2563eb"
+            });
+        {% endfor %}
+        });
+    </script>
+    {% endif %}
+
+    <form id="register-form" action="" method="POST">
+        {% csrf_token %}
+
+        <label for="username">Username</label>
+        <input type="text" name="username" id="username" placeholder="Enter your username" required>
+
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" placeholder="Enter your email" required>
+
+        <label for="password1">Password</label>
+        <input type="password" name="password1" id="password1" placeholder="Enter password" required>
+
+        <label for="password2">Confirm Password</label>
+        <input type="password" name="password2" id="password2" placeholder="Confirm password" required>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("register-form");
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const url = form.action || window.location.href;
+        const formData = new FormData(form);
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.fire({
+                icon: data.status,  // success or error
+                title: data.status.charAt(0).toUpperCase() + data.status.slice(1),
+                text: data.message,
+                confirmButtonColor: "#2563eb"
+            }).then(() => {
+                if(data.redirect_url){
+                    window.location.href = data.redirect_url;
+                }
+            });
+        })
+        .catch(err => {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Something went wrong. Please try again.",
+                confirmButtonColor: "#2563eb"
+            });
+            console.error(err);
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Python cache files
+__pycache__/
+*.pyc
+
+# Django stuff
+*.log
+*.sqlite3
+/mediafiles/
+
+# Environment variables
+.env
+.env.*

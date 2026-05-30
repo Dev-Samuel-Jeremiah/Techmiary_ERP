@@ -1,0 +1,415 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chat – {{ other.get_full_name|default:other.username }}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ink:#f2f0eb;--surface:#1b1b24;--surface2:#21212e;--surface3:#272736;
+  --rim:rgba(255,255,255,.06);--rim2:rgba(255,255,255,.1);--rim3:rgba(255,255,255,.16);
+  --champagne:#c9a96e;--champagne-lt:#e8c98a;--champagne-dim:rgba(201,169,110,.15);
+  --slate:rgba(255,255,255,.38);--slate2:rgba(255,255,255,.58);
+  --green:#35c58b;--green-dim:rgba(53,197,139,.12);
+  --blue:#5ea2ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:#14141b;color:var(--ink)}
+
+/* ── LAYOUT ── */
+.layout{display:flex;height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:300px;border-right:1px solid var(--rim2);background:var(--surface);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:1rem;border-bottom:1px solid var(--rim2);display:flex;align-items:center;gap:.6rem}
+.sidebar-header a{color:var(--champagne);text-decoration:none;font-size:.85rem}
+.sidebar-header h2{font-size:.95rem;font-weight:600;flex:1}
+.sidebar-search{padding:.6rem .75rem;border-bottom:1px solid var(--rim2)}
+.search-input{width:100%;background:var(--surface3);border:1px solid var(--rim3);color:var(--ink);border-radius:20px;padding:.45rem .9rem;font-family:inherit;font-size:.85rem;outline:none}
+.search-input::placeholder{color:var(--slate)}
+.conv-list{flex:1;overflow-y:auto}
+.conv-list::-webkit-scrollbar{width:3px}
+.conv-list::-webkit-scrollbar-thumb{background:var(--rim3);border-radius:3px}
+.conv-item{display:flex;align-items:center;gap:.65rem;padding:.75rem;cursor:pointer;text-decoration:none;color:var(--ink);border-bottom:1px solid var(--rim);transition:.15s}
+.conv-item:hover{background:var(--surface2)}
+.conv-item.active{background:var(--champagne-dim);border-left:3px solid var(--champagne)}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--surface3);border:2px solid var(--rim3);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:600;color:var(--champagne);flex-shrink:0;position:relative}
+.online-dot{position:absolute;bottom:0;right:0;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--surface)}
+.conv-info{flex:1;min-width:0}
+.conv-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-preview{font-size:.75rem;color:var(--slate2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-preview.unread{color:var(--ink);font-weight:500}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--champagne);flex-shrink:0}
+.new-chat-btn{margin:.75rem;display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.55rem;border-radius:8px;background:var(--champagne-dim);color:var(--champagne);border:1px solid rgba(201,169,110,.25);text-decoration:none;font-size:.85rem;font-weight:500;transition:.2s}
+.new-chat-btn:hover{background:var(--champagne);color:#111}
+
+/* ── CHAT MAIN ── */
+.chat-main{flex:1;display:flex;flex-direction:column;min-width:0}
+
+/* Chat header */
+.chat-header{background:var(--surface);border-bottom:1px solid var(--rim2);padding:.75rem 1.25rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+.header-avatar{width:40px;height:40px;border-radius:50%;background:var(--surface3);border:2px solid var(--rim3);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:600;color:var(--champagne);position:relative;flex-shrink:0}
+.header-name{font-size:1rem;font-weight:600}
+.header-status{font-size:.75rem;color:var(--slate2)}
+.header-status.online{color:var(--green)}
+
+/* Messages area */
+.messages-area{flex:1;overflow-y:auto;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.35rem}
+.messages-area::-webkit-scrollbar{width:4px}
+.messages-area::-webkit-scrollbar-thumb{background:var(--rim3);border-radius:4px}
+
+/* Date separator */
+.date-sep{text-align:center;color:var(--slate);font-size:.72rem;margin:.75rem 0;position:relative}
+.date-sep::before,.date-sep::after{content:'';position:absolute;top:50%;width:30%;height:1px;background:var(--rim2)}
+.date-sep::before{left:0}.date-sep::after{right:0}
+
+/* Bubbles */
+.msg-row{display:flex;align-items:flex-end;gap:.5rem;max-width:72%}
+.msg-row.mine{align-self:flex-end;flex-direction:row-reverse}
+.msg-row.other{align-self:flex-start}
+.msg-av{width:28px;height:28px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;color:var(--champagne);flex-shrink:0}
+.msg-av.hidden{visibility:hidden}
+.bubble-wrap{display:flex;flex-direction:column;gap:.15rem}
+.bubble{padding:.55rem .85rem;border-radius:18px;font-size:.9rem;line-height:1.45;word-break:break-word;max-width:360px}
+.msg-row.mine .bubble{background:var(--champagne);color:#111;border-bottom-right-radius:4px}
+.msg-row.other .bubble{background:var(--surface3);color:var(--ink);border-bottom-left-radius:4px}
+.bubble-meta{font-size:.68rem;color:var(--slate);display:flex;align-items:center;gap:.3rem}
+.msg-row.mine .bubble-meta{justify-content:flex-end}
+.read-tick{color:var(--champagne);font-size:.7rem}
+
+/* Typing indicator */
+.typing-row{align-self:flex-start;display:flex;align-items:center;gap:.5rem;padding:.25rem 0;display:none}
+.typing-bubble{background:var(--surface3);border-radius:18px;border-bottom-left-radius:4px;padding:.55rem .85rem;display:flex;gap:4px;align-items:center}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--slate2);animation:blink 1.4s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+.typing-label{font-size:.75rem;color:var(--slate2)}
+
+/* Input */
+.chat-input-area{background:var(--surface);border-top:1px solid var(--rim2);padding:.75rem 1.25rem;flex-shrink:0}
+.input-row{display:flex;align-items:flex-end;gap:.6rem;background:var(--surface3);border:1px solid var(--rim3);border-radius:24px;padding:.5rem .6rem .5rem 1rem;transition:.2s}
+.input-row:focus-within{border-color:var(--champagne)}
+.msg-input{flex:1;background:none;border:none;color:var(--ink);font-family:inherit;font-size:.92rem;outline:none;resize:none;max-height:120px;line-height:1.4}
+.msg-input::placeholder{color:var(--slate)}
+.send-btn{width:36px;height:36px;border-radius:50%;background:var(--champagne);color:#111;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;flex-shrink:0;transition:.2s}
+.send-btn:hover{background:var(--champagne-lt)}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Moderation warning */
+.mod-warning{
+  display:none;
+  background:rgba(239,107,115,.1);border:1px solid rgba(239,107,115,.35);
+  border-radius:12px;padding:.85rem 1rem;margin:.5rem 0;
+  font-family:'Outfit',sans-serif;animation:shake .3s ease;
+}
+.mod-warning.show{display:flex;gap:.75rem;align-items:flex-start}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.mod-icon{font-size:1.4rem;flex-shrink:0;line-height:1}
+.mod-body{}
+.mod-title{font-size:.85rem;font-weight:700;color:#ef6b73;margin-bottom:.25rem}
+.mod-reason{font-size:.8rem;color:rgba(255,255,255,.65);line-height:1.45}
+.mod-category{display:inline-block;background:rgba(239,107,115,.15);color:#ef6b73;
+  border:1px solid rgba(239,107,115,.3);border-radius:4px;
+  font-size:.68rem;font-weight:600;padding:.1rem .45rem;margin-bottom:.3rem;letter-spacing:.04em}
+.mod-dismiss{margin-top:.4rem;font-size:.75rem;color:rgba(255,255,255,.4);cursor:pointer;text-decoration:underline}
+.mod-dismiss:hover{color:rgba(255,255,255,.7)}
+.empty-chat i{font-size:2.5rem;color:var(--rim3)}
+
+@media(max-width:640px){.sidebar{display:none}}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <a href="{% url 'chat:inbox' %}"><i class="bi bi-arrow-left"></i></a>
+      <h2><i class="bi bi-chat-dots" style="color:var(--champagne)"></i> Messages</h2>
+    </div>
+    <div class="sidebar-search">
+      <input class="search-input" placeholder="Search…" oninput="filterConvs(this.value)">
+    </div>
+    <a href="{% url 'chat:people' %}" class="new-chat-btn"><i class="bi bi-person-plus"></i> New Chat</a>
+    <div class="conv-list" id="convList">
+      {% for item in conv_data %}
+      <a href="{% url 'chat:conversation' item.conv.id %}"
+         class="conv-item {% if item.conv.id == conv.id %}active{% endif %}"
+         data-name="{{ item.other.get_full_name|default:item.other.username|lower }}">
+        <div class="avatar">
+          {{ item.other.first_name|first|upper }}{{ item.other.last_name|first|upper }}
+          <span class="online-dot" id="dot-{{ item.other.id }}" style="display:none"></span>
+        </div>
+        <div class="conv-info">
+          <div class="conv-name">{{ item.other.get_full_name|default:item.other.username }}</div>
+          <div class="conv-preview {% if item.unread %}unread{% endif %}">
+            {% if item.last %}{% if item.last.sender == request.user %}You: {% endif %}{{ item.last.content|truncatechars:28 }}{% else %}No messages{% endif %}
+          </div>
+        </div>
+        {% if item.unread %}<div class="unread-dot"></div>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- CHAT MAIN -->
+  <div class="chat-main">
+    <!-- Header -->
+    <div class="chat-header">
+      <a href="{% url 'chat:inbox' %}" style="color:var(--slate2);text-decoration:none;display:none" class="back-mobile"><i class="bi bi-arrow-left"></i></a>
+      <div class="header-avatar">
+        {{ other.first_name|first|upper }}{{ other.last_name|first|upper }}
+        <span class="online-dot" id="headerDot" style="display:none"></span>
+      </div>
+      <div>
+        <div class="header-name">{{ other.get_full_name|default:other.username }}</div>
+        <div class="header-status" id="headerStatus">Offline</div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea">
+      {% if not messages %}
+        <div class="empty-chat">
+          <i class="bi bi-chat"></i>
+          <p>No messages yet. Say hello!</p>
+        </div>
+      {% else %}
+        {% for msg in messages %}
+          {% if forloop.first %}
+            <div class="date-sep">{{ msg.sent_at|date:"D, d M Y" }}</div>
+          {% endif %}
+          <div class="msg-row {% if msg.sender == request.user %}mine{% else %}other{% endif %}" id="msg-{{ msg.id }}">
+            <div class="msg-av {% if msg.sender == request.user %}hidden{% endif %}">
+              {{ msg.sender.first_name|first|upper }}{{ msg.sender.last_name|first|upper }}
+            </div>
+            <div class="bubble-wrap">
+              <div class="bubble">{{ msg.content }}</div>
+              <div class="bubble-meta">
+                <span>{{ msg.sent_at|time:"H:i" }}</span>
+                {% if msg.sender == request.user %}
+                  <span class="read-tick" id="tick-{{ msg.id }}">
+                    {% if msg.is_read %}<i class="bi bi-check2-all"></i>{% else %}<i class="bi bi-check2"></i>{% endif %}
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+      <!-- Typing indicator -->
+      <div class="typing-row" id="typingRow">
+        <div class="msg-av">{{ other.first_name|first|upper }}</div>
+        <div>
+          <div class="typing-bubble">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+          <div class="typing-label" id="typingLabel"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+      <!-- Moderation warning -->
+      <div class="mod-warning" id="modWarning">
+        <div class="mod-icon">🚫</div>
+        <div class="mod-body">
+          <div class="mod-category" id="modCategory"></div>
+          <div class="mod-title">Message Blocked</div>
+          <div class="mod-reason" id="modReason"></div>
+          <div class="mod-dismiss" onclick="dismissWarning()">Dismiss</div>
+        </div>
+      </div>
+      <div class="input-row">
+        <textarea class="msg-input" id="msgInput" placeholder="Type a message…" rows="1" maxlength="2000"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONV_ID = {{ conv.id }};
+const MY_ID = {{ request.user.id }};
+const OTHER_ID = {{ other.id }};
+const CSRF = "{{ csrf_token }}";
+
+/* ── Auto-resize textarea ── */
+const input = document.getElementById('msgInput');
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+});
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+/* ── Scroll to bottom ── */
+const area = document.getElementById('messagesArea');
+area.scrollTop = area.scrollHeight;
+
+/* ── Sidebar filter ── */
+function filterConvs(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.conv-item').forEach(el => {
+    el.style.display = el.dataset.name?.includes(q) ? '' : 'none';
+  });
+}
+
+/* ── WebSocket ── */
+const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+let socket;
+let typingTimer;
+let isTyping = false;
+
+function connect() {
+  socket = new WebSocket(`${proto}://${location.host}/ws/chat/${CONV_ID}/`);
+
+  socket.onopen = () => {
+    socket.send(JSON.stringify({ type: 'read' }));
+  };
+
+  socket.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === 'message') appendMessage(data);
+    else if (data.type === 'read') markAllRead();
+    else if (data.type === 'typing') handleTyping(data);
+    else if (data.type === 'blocked') showModerationWarning(data);
+  };
+
+  socket.onclose = () => setTimeout(connect, 3000);
+}
+connect();
+
+/* ── Presence WS ── */
+const presenceWS = new WebSocket(`${proto}://${location.host}/ws/presence/`);
+presenceWS.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  if (data.type === 'presence' && data.user_id == OTHER_ID) {
+    const online = data.status === 'online';
+    const dot = document.getElementById('headerDot');
+    const status = document.getElementById('headerStatus');
+    const sdot = document.getElementById(`dot-${OTHER_ID}`);
+    if (dot) dot.style.display = online ? 'block' : 'none';
+    if (sdot) sdot.style.display = online ? 'block' : 'none';
+    if (status) {
+      status.textContent = online ? 'Online' : 'Offline';
+      status.className = 'header-status' + (online ? ' online' : '');
+    }
+  }
+};
+
+/* ── Send message ── */
+function sendMessage() {
+  const content = input.value.trim();
+  if (!content || !socket || socket.readyState !== WebSocket.OPEN) return;
+  socket.send(JSON.stringify({ type: 'message', content }));
+  input.value = '';
+  input.style.height = 'auto';
+  stopTyping();
+}
+
+/* ── Typing indicator ── */
+input.addEventListener('input', () => {
+  if (!isTyping) {
+    isTyping = true;
+    socket?.send(JSON.stringify({ type: 'typing', is_typing: true }));
+  }
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(stopTyping, 2000);
+});
+
+function stopTyping() {
+  if (isTyping) {
+    isTyping = false;
+    socket?.send(JSON.stringify({ type: 'typing', is_typing: false }));
+  }
+}
+
+function handleTyping(data) {
+  const row = document.getElementById('typingRow');
+  const label = document.getElementById('typingLabel');
+  if (data.is_typing) {
+    row.style.display = 'flex';
+    label.textContent = `${data.display_name} is typing…`;
+    area.scrollTop = area.scrollHeight;
+  } else {
+    row.style.display = 'none';
+  }
+}
+
+/* ── Append new message ── */
+function appendMessage(data) {
+  // Remove empty state
+  const empty = area.querySelector('.empty-chat');
+  if (empty) empty.remove();
+
+  const isMe = data.sender_id == MY_ID;
+  const row = document.createElement('div');
+  row.className = `msg-row ${isMe ? 'mine' : 'other'}`;
+  row.id = `msg-${data.message_id}`;
+  row.innerHTML = `
+    <div class="msg-av ${isMe ? 'hidden' : ''}">
+      ${esc(data.display_name).charAt(0).toUpperCase()}
+    </div>
+    <div class="bubble-wrap">
+      <div class="bubble">${esc(data.content)}</div>
+      <div class="bubble-meta">
+        <span>${data.sent_at}</span>
+        ${isMe ? `<span class="read-tick" id="tick-${data.message_id}"><i class="bi bi-check2"></i></span>` : ''}
+      </div>
+    </div>
+  `;
+
+  const typingRow = document.getElementById('typingRow');
+  area.insertBefore(row, typingRow);
+  area.scrollTop = area.scrollHeight;
+
+  // Mark read if other sent
+  if (!isMe) socket?.send(JSON.stringify({ type: 'read' }));
+}
+
+/* ── Moderation warning ── */
+function showModerationWarning(data) {
+  const warning = document.getElementById('modWarning');
+  document.getElementById('modCategory').textContent = data.label || 'Policy Violation';
+  document.getElementById('modReason').textContent = data.reason || 'This message was blocked.';
+  warning.classList.add('show');
+  // Shake the input
+  const inputRow = document.querySelector('.input-row');
+  inputRow.style.borderColor = '#ef6b73';
+  setTimeout(() => inputRow.style.borderColor = '', 3000);
+  // Auto-dismiss after 10s
+  clearTimeout(window._modTimer);
+  window._modTimer = setTimeout(dismissWarning, 10000);
+}
+
+function dismissWarning() {
+  document.getElementById('modWarning').classList.remove('show');
+  document.querySelector('.input-row').style.borderColor = '';
+}
+
+/* ── Mark read ticks ── */
+function markAllRead() {
+  document.querySelectorAll('.read-tick').forEach(el => {
+    el.innerHTML = '<i class="bi bi-check2-all"></i>';
+  });
+}
+
+const esc = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+
+/* ── Sidebar conv data for filter (pass from view via inline) ── */
+{% for item in conv_data %}
+{% endfor %}
+</script>
+</body>
+</html>

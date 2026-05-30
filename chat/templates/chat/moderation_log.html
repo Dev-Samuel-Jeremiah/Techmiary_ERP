@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Moderation Log</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ink:#f2f0eb;--surface:#1b1b24;--surface2:#21212e;--surface3:#272736;
+  --rim:rgba(255,255,255,.06);--rim2:rgba(255,255,255,.1);--rim3:rgba(255,255,255,.16);
+  --champagne:#c9a96e;--champagne-lt:#e8c98a;--champagne-dim:rgba(201,169,110,.12);
+  --slate:rgba(255,255,255,.38);--slate2:rgba(255,255,255,.58);
+  --red:#ef6b73;--red-dim:rgba(239,107,115,.1);--red-border:rgba(239,107,115,.3);
+  --green:#35c58b;--green-dim:rgba(53,197,139,.1);--green-border:rgba(53,197,139,.25);
+  --orange:#ff8c42;--purple:#9b59b6;--yellow:#f4b942;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#14141b;color:var(--ink);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--rim2);padding:1rem 1.5rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.topbar a{color:var(--champagne);text-decoration:none;font-size:.9rem}
+.topbar h1{font-size:1.1rem;font-weight:600;flex:1}
+.badge-alert{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);padding:.3rem .75rem;border-radius:6px;font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:.35rem}
+.container{max-width:1100px;margin:1.5rem auto;padding:0 1.25rem}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
+.filter-bar select,.filter-bar a{padding:.45rem .9rem;border-radius:8px;font-size:.82rem;font-family:inherit;cursor:pointer;text-decoration:none;border:1px solid var(--rim3);background:var(--surface2);color:var(--ink);outline:none;transition:.15s}
+.filter-bar select:focus,.filter-bar a:hover{border-color:var(--rim3);background:var(--surface3)}
+.filter-bar .active{border-color:var(--champagne);color:var(--champagne)}
+.filter-spacer{flex:1}
+.stat-row{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.stat-card{background:var(--surface2);border:1px solid var(--rim2);border-radius:10px;padding:.85rem 1.25rem;flex:1;min-width:140px}
+.stat-card .num{font-size:1.6rem;font-weight:700}
+.stat-card .lbl{font-size:.75rem;color:var(--slate2);margin-top:.1rem}
+
+/* Table */
+.table-wrap{background:var(--surface2);border:1px solid var(--rim2);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);padding:.65rem 1rem;text-align:left;border-bottom:1px solid var(--rim2);background:var(--surface3)}
+tbody tr{border-bottom:1px solid var(--rim)}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody td{padding:.75rem 1rem;font-size:.85rem;vertical-align:top}
+.content-cell{max-width:300px;word-break:break-word;color:rgba(255,255,255,.7);font-style:italic}
+.sender-cell{white-space:nowrap}
+.time-cell{white-space:nowrap;font-size:.75rem;color:var(--slate2)}
+
+/* Category badges */
+.cat-badge{display:inline-block;padding:.2rem .55rem;border-radius:5px;font-size:.7rem;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+.cat-sexual{background:rgba(239,107,115,.15);color:#ef6b73;border:1px solid rgba(239,107,115,.3)}
+.cat-hate_speech{background:rgba(255,140,66,.15);color:#ff8c42;border:1px solid rgba(255,140,66,.3)}
+.cat-threat{background:rgba(239,107,115,.15);color:#ef6b73;border:1px solid rgba(239,107,115,.3)}
+.cat-bullying{background:rgba(244,185,66,.15);color:#f4b942;border:1px solid rgba(244,185,66,.3)}
+.cat-self_harm{background:rgba(155,89,182,.15);color:#9b59b6;border:1px solid rgba(155,89,182,.3)}
+
+/* Review status */
+.reviewed-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .55rem;border-radius:5px;font-size:.72rem;font-weight:600}
+.reviewed-yes{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.reviewed-no{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+
+/* Review form */
+.review-btn{background:var(--champagne-dim);color:var(--champagne);border:1px solid rgba(201,169,110,.25);border-radius:6px;padding:.3rem .65rem;font-size:.78rem;font-weight:500;cursor:pointer;font-family:inherit;transition:.15s}
+.review-btn:hover{background:var(--champagne);color:#111}
+.review-panel{display:none;margin-top:.5rem;background:var(--surface3);border:1px solid var(--rim3);border-radius:8px;padding:.75rem}
+.review-panel.open{display:block}
+.review-panel textarea{width:100%;background:var(--surface);border:1px solid var(--rim3);color:var(--ink);border-radius:6px;padding:.45rem .65rem;font-family:inherit;font-size:.82rem;outline:none;resize:vertical;min-height:60px;margin-bottom:.5rem}
+.review-panel textarea:focus{border-color:var(--champagne)}
+.review-panel button{background:var(--green);color:#0d1a13;border:none;border-radius:6px;padding:.4rem .85rem;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit}
+.review-panel button:hover{filter:brightness(1.1)}
+
+.empty{text-align:center;padding:3rem;color:var(--slate)}
+.empty i{font-size:2.5rem;display:block;margin-bottom:.75rem;color:var(--rim3)}
+.admin-note-text{font-size:.75rem;color:var(--slate2);margin-top:.3rem;font-style:italic}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/chat/"><i class="bi bi-arrow-left"></i> Messages</a>
+  <h1><i class="bi bi-shield-exclamation" style="color:var(--red)"></i> Moderation Log</h1>
+  {% if unreviewed_count %}
+  <div class="badge-alert"><i class="bi bi-exclamation-triangle-fill"></i> {{ unreviewed_count }} unreviewed</div>
+  {% endif %}
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stat-row">
+    {% for cat_key, cat_label in categories %}
+    <div class="stat-card">
+      <div class="num cat-{{ cat_key }}" style="font-size:1.3rem">
+        {{ blocked_messages|length }}
+      </div>
+      <div class="lbl">{{ cat_label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <a href="?{% if reviewed_filter %}reviewed={{ reviewed_filter }}{% endif %}" class="{% if not category_filter %}active{% endif %}">All Categories</a>
+    {% for cat_key, cat_label in categories %}
+    <a href="?category={{ cat_key }}{% if reviewed_filter %}&reviewed={{ reviewed_filter }}{% endif %}"
+       class="{% if category_filter == cat_key %}active{% endif %}">{{ cat_label }}</a>
+    {% endfor %}
+    <div class="filter-spacer"></div>
+    <a href="?{% if category_filter %}category={{ category_filter }}&{% endif %}reviewed=0" class="{% if reviewed_filter == '0' %}active{% endif %}">Unreviewed</a>
+    <a href="?{% if category_filter %}category={{ category_filter }}&{% endif %}reviewed=1" class="{% if reviewed_filter == '1' %}active{% endif %}">Reviewed</a>
+    <a href="?{% if category_filter %}category={{ category_filter }}{% endif %}">All</a>
+  </div>
+
+  {% if not blocked_messages %}
+  <div class="empty">
+    <i class="bi bi-shield-check"></i>
+    <p>No blocked messages{% if category_filter %} in this category{% endif %}.</p>
+  </div>
+  {% else %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Sender</th>
+          <th>Category</th>
+          <th>Blocked Content</th>
+          <th>Matched Word</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for msg in blocked_messages %}
+        <tr>
+          <td class="time-cell">{{ msg.blocked_at|date:"d M Y" }}<br>{{ msg.blocked_at|time:"H:i" }}</td>
+          <td class="sender-cell">
+            <strong>{{ msg.sender.get_full_name|default:msg.sender.username }}</strong><br>
+            <span style="font-size:.72rem;color:var(--slate2)">{{ msg.sender.username }}</span>
+          </td>
+          <td><span class="cat-badge cat-{{ msg.category }}">{{ msg.get_category_display }}</span></td>
+          <td class="content-cell">"{{ msg.content|truncatechars:120 }}"</td>
+          <td><code style="color:var(--red);font-size:.8rem">{{ msg.matched_word }}</code></td>
+          <td>
+            {% if msg.reviewed %}
+              <span class="reviewed-badge reviewed-yes"><i class="bi bi-check2-circle"></i> Reviewed</span>
+              {% if msg.admin_note %}
+              <div class="admin-note-text">📝 {{ msg.admin_note|truncatechars:60 }}</div>
+              {% endif %}
+            {% else %}
+              <span class="reviewed-badge reviewed-no"><i class="bi bi-clock"></i> Pending</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if not msg.reviewed %}
+            <button class="review-btn" onclick="toggleReview({{ msg.id }})">
+              <i class="bi bi-check2"></i> Review
+            </button>
+            <div class="review-panel" id="review-{{ msg.id }}">
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="mark_reviewed" value="{{ msg.id }}">
+                <textarea name="admin_note" placeholder="Add a note (optional)…"></textarea>
+                <button type="submit"><i class="bi bi-check2-circle"></i> Mark Reviewed</button>
+              </form>
+            </div>
+            {% else %}
+            <span style="color:var(--slate);font-size:.75rem">Done</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function toggleReview(id) {
+  const panel = document.getElementById(`review-${id}`);
+  panel.classList.toggle('open');
+}
+</script>
+</body>
+</html>

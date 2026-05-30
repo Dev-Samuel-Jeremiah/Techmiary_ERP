@@ -1,0 +1,725 @@
+{% load static %}
+{% now "Y" as current_year %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Login | {{ tenant.name }}</title>
+  <link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root {
+      --ink: #0e0e12;
+      --ink2: #16161d;
+      --surface: #1b1b24;
+      --surface2: #21212e;
+      --rim: rgba(255,255,255,.06);
+      --rim2: rgba(255,255,255,.1);
+      --champagne: #c9a96e;
+      --champagne-lt: #e8c98a;
+      --champagne-dim: rgba(201,169,110,.12);
+      --champagne-glow: rgba(201,169,110,.22);
+      --slate: rgba(255,255,255,.38);
+      --slate2: rgba(255,255,255,.55);
+      --white: #f2f0eb;
+      --radius: 14px;
+      --radius-sm: 9px;
+      --danger: #e86060;
+      --success: #5ecb8e;
+      --info: #60a8e8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: "Outfit", system-ui, sans-serif; background: var(--ink); color: var(--white); }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── PAGE SHELL ── */
+    .page { display: flex; min-height: 100vh; }
+
+    /* ════════════════════════════════
+       LEFT  — Brand showcase
+    ════════════════════════════════ */
+    .left {
+      flex: 0 0 52%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--ink2);
+    }
+
+    /* Layered background atmosphere */
+    .left-bg {
+      position: absolute; inset: 0; pointer-events: none;
+    }
+    .left-bg svg { width: 100%; height: 100%; }
+
+    /* Thin vertical rule — decorative separator inside left panel */
+    .left::after {
+      content: "";
+      position: absolute; top: 0; right: 0; bottom: 0; width: 1px;
+      background: linear-gradient(to bottom, transparent 0%, rgba(201,169,110,.3) 40%, rgba(201,169,110,.3) 60%, transparent 100%);
+    }
+
+    .left-inner {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; justify-content: space-between;
+      height: 100%; padding: 3.25rem 3.75rem;
+    }
+
+    /* School logo + name */
+    .school-mark {
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .school-logo-wrap {
+      width: 48px; height: 48px; border-radius: 12px;
+      border: 1px solid rgba(201,169,110,.3);
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      background: var(--champagne-dim);
+      flex-shrink: 0;
+    }
+    .school-logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .logo-initials {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.05rem; font-weight: 600; color: var(--champagne);
+      letter-spacing: 1px;
+    }
+    .school-name-block small {
+      display: block; font-size: .65rem; font-weight: 600; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--champagne); margin-bottom: .12rem;
+    }
+    .school-name-block strong {
+      display: block; font-size: .88rem; font-weight: 500; color: var(--slate2);
+    }
+
+    /* Hero headline */
+    .hero {
+      margin: auto 0;
+      padding: 3rem 0;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: .55rem;
+      font-size: .7rem; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--champagne); margin-bottom: 2rem;
+    }
+    .hero-eyebrow::before {
+      content: ""; width: 22px; height: 1px; background: var(--champagne);
+    }
+    .hero-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(2.6rem, 4vw, 3.8rem);
+      font-weight: 500; line-height: 1.08; color: var(--white);
+      letter-spacing: -.5px; margin-bottom: 1.5rem;
+    }
+    .hero-title em {
+      font-style: italic; color: var(--champagne);
+    }
+    .hero-title .line-indent {
+      padding-left: 2.5rem;
+      display: block;
+    }
+    .hero-body {
+      font-size: .9rem; line-height: 1.8; color: var(--slate);
+      max-width: 380px; margin-bottom: 2.5rem;
+    }
+
+    /* Stat pills row */
+    .stat-row {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+    }
+    .stat-pill {
+      background: var(--surface);
+      border: 1px solid var(--rim2);
+      border-radius: 50px;
+      padding: .5rem 1.15rem;
+      display: flex; align-items: center; gap: .55rem;
+    }
+    .stat-pill i { color: var(--champagne); font-size: 1rem; }
+    .stat-pill span { font-size: .78rem; font-weight: 500; color: var(--slate2); }
+    .stat-pill strong { color: var(--white); font-weight: 600; }
+
+    /* Module cards */
+    .module-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: .8rem; margin-top: 2.75rem;
+    }
+    .module-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--rim);
+      border-radius: var(--radius);
+      padding: 1.1rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .22s, background .22s;
+      cursor: default;
+    }
+    .module-card::before {
+      content: ""; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      opacity: 0; transition: opacity .22s;
+    }
+    .module-card:hover { background: rgba(255,255,255,.05); border-color: rgba(201,169,110,.2); }
+    .module-card:hover::before { opacity: 1; }
+    .mc-gold::before { background: linear-gradient(90deg, var(--champagne), var(--champagne-lt)); }
+    .mc-blue::before { background: linear-gradient(90deg, #4a90d9, #7ab8f5); }
+    .mc-green::before { background: linear-gradient(90deg, #3da87a, #6dd4a4); }
+    .mc-purple::before { background: linear-gradient(90deg, #7b5cf5, #b09dfc); }
+
+    .mc-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; margin-bottom: .7rem;
+    }
+    .mci-gold { background: rgba(201,169,110,.14); color: var(--champagne); }
+    .mci-blue { background: rgba(74,144,217,.14); color: #7ab8f5; }
+    .mci-green { background: rgba(61,168,122,.14); color: #6dd4a4; }
+    .mci-purple { background: rgba(123,92,245,.14); color: #b09dfc; }
+
+    .mc-label { font-size: .8rem; font-weight: 600; color: var(--white); margin-bottom: .2rem; }
+    .mc-desc { font-size: .68rem; color: var(--slate); line-height: 1.4; }
+
+    /* Footer strip */
+    .left-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rim);
+    }
+    .lf-credit {
+      font-size: .7rem; color: var(--slate);
+    }
+    .lf-credit strong { color: var(--champagne-lt); font-weight: 600; }
+    .lf-secure {
+      display: flex; align-items: center; gap: .4rem;
+      font-size: .68rem; color: var(--slate);
+    }
+    .lf-secure i { color: var(--success); font-size: .85rem; }
+
+    /* ════════════════════════════════
+       RIGHT — Login form
+    ════════════════════════════════ */
+    .right {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 2.5rem 2rem;
+      background: var(--ink);
+      position: relative;
+    }
+    /* subtle dot texture */
+    .right::before {
+      content: "";
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .card {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 420px;
+    }
+
+    .card-header { margin-bottom: 2rem; }
+    .card-eyebrow {
+      font-size: .68rem; font-weight: 600; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--champagne);
+      display: flex; align-items: center; gap: .55rem; margin-bottom: 1rem;
+    }
+    .card-eyebrow::before { content: ""; width: 16px; height: 1px; background: var(--champagne); }
+    .card-title {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 2.2rem; font-weight: 500; color: var(--white);
+      line-height: 1.1; margin-bottom: .4rem;
+    }
+    .card-sub { font-size: .85rem; color: var(--slate); }
+
+    /* Role switcher */
+    .roles {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: .5rem; margin-bottom: 1.75rem;
+      background: var(--surface);
+      border: 1px solid var(--rim);
+      border-radius: var(--radius);
+      padding: .35rem;
+    }
+    .role-btn {
+      display: flex; flex-direction: column; align-items: center;
+      gap: .3rem; padding: .75rem .5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all .2s;
+      background: none;
+    }
+    .role-btn i { font-size: 1.3rem; color: var(--slate); transition: color .2s; }
+    .role-btn span {
+      font-size: .7rem; font-weight: 600; color: var(--slate);
+      letter-spacing: .3px; transition: color .2s;
+    }
+    .role-btn:hover { background: rgba(255,255,255,.04); }
+    .role-btn:hover i, .role-btn:hover span { color: var(--slate2); }
+    .role-btn.active {
+      background: var(--champagne-dim);
+      border-color: rgba(201,169,110,.35);
+    }
+    .role-btn.active i, .role-btn.active span { color: var(--champagne); }
+
+    /* Messages */
+    .messages { margin-bottom: 1rem; }
+    .msg {
+      display: flex; align-items: flex-start; gap: .6rem;
+      padding: .75rem 1rem; border-radius: var(--radius-sm);
+      font-size: .82rem; border: 1px solid; margin-bottom: .4rem;
+      line-height: 1.45;
+    }
+    .msg i { font-size: 1rem; flex-shrink: 0; margin-top: .05rem; }
+    .msg-error { background: rgba(232,96,96,.08); border-color: rgba(232,96,96,.2); color: #f5a0a0; }
+    .msg-success { background: rgba(94,203,142,.08); border-color: rgba(94,203,142,.2); color: #8fe8b6; }
+    .msg-info { background: rgba(96,168,232,.08); border-color: rgba(96,168,232,.2); color: #93c5fd; }
+
+    /* Form elements */
+    .field { margin-bottom: 1.1rem; }
+    .field-label {
+      display: block; font-size: .75rem; font-weight: 600;
+      color: var(--slate2); margin-bottom: .45rem; letter-spacing: .4px;
+    }
+    .field-input {
+      width: 100%; padding: .82rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--rim2);
+      border-radius: var(--radius-sm);
+      font-size: .9rem; color: var(--white);
+      font-family: "Outfit", inherit;
+      outline: none; transition: border-color .18s, box-shadow .18s;
+    }
+    .field-input::placeholder { color: rgba(255,255,255,.18); }
+    .field-input:focus {
+      border-color: var(--champagne);
+      box-shadow: 0 0 0 3px rgba(201,169,110,.1);
+    }
+
+    .pw-group { position: relative; }
+    .pw-group .field-input { padding-right: 3rem; }
+    .pw-eye {
+      position: absolute; right: .9rem; top: 50%; transform: translateY(-50%);
+      cursor: pointer; color: var(--slate); font-size: 1rem;
+      transition: color .18s; border: none; background: none; padding: 0;
+      display: flex; align-items: center;
+    }
+    .pw-eye:hover { color: var(--champagne); }
+
+    .form-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; font-size: .78rem;
+    }
+    .remember {
+      display: flex; align-items: center; gap: .45rem;
+      color: var(--slate); cursor: pointer;
+    }
+    .remember input { accent-color: var(--champagne); }
+    .forgot { color: var(--champagne); font-weight: 500; transition: color .18s; }
+    .forgot:hover { color: var(--champagne-lt); }
+
+    /* Submit */
+    .btn-sign-in {
+      width: 100%; padding: .9rem 1rem;
+      border: none; border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--champagne) 0%, #a07830 100%);
+      color: #fff;
+      font-size: .9rem; font-weight: 700; font-family: "Outfit", inherit;
+      cursor: pointer; letter-spacing: .4px;
+      box-shadow: 0 4px 20px rgba(201,169,110,.25);
+      transition: transform .14s, box-shadow .14s;
+      display: flex; align-items: center; justify-content: center; gap: .55rem;
+    }
+    .btn-sign-in:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 7px 26px rgba(201,169,110,.35);
+    }
+    .btn-sign-in:active { transform: translateY(0); }
+
+    /* Parent redirect panel */
+    #parent-panel {
+      display: none;
+      text-align: center;
+      padding: 2rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--rim2);
+      border-radius: var(--radius);
+    }
+    .parent-icon {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--champagne-dim);
+      border: 1px solid rgba(201,169,110,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: var(--champagne);
+      margin: 0 auto 1rem;
+    }
+    #parent-panel h3 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 1.3rem; font-weight: 500; color: var(--white);
+      margin-bottom: .5rem;
+    }
+    #parent-panel p { font-size: .83rem; color: var(--slate); margin-bottom: 1.25rem; line-height: 1.6; }
+    .btn-parent-portal {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--champagne-dim);
+      border: 1px solid rgba(201,169,110,.3);
+      border-radius: var(--radius-sm);
+      padding: .7rem 1.4rem;
+      color: var(--champagne-lt);
+      font-size: .85rem; font-weight: 600;
+      transition: background .18s, border-color .18s;
+    }
+    .btn-parent-portal:hover { background: var(--champagne-glow); border-color: rgba(201,169,110,.5); }
+
+    /* Divider */
+    .divider {
+      display: flex; align-items: center; gap: .75rem;
+      margin: 1.4rem 0; font-size: .73rem; color: var(--slate);
+    }
+    .divider::before, .divider::after {
+      content: ""; flex: 1; height: 1px; background: var(--rim2);
+    }
+
+    /* Trust bar */
+    .trust-bar {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: .5rem; margin-top: 1.4rem;
+    }
+    .trust-item {
+      display: flex; flex-direction: column; align-items: center; gap: .3rem;
+      padding: .7rem .5rem;
+      background: var(--surface);
+      border: 1px solid var(--rim);
+      border-radius: var(--radius-sm);
+    }
+    .trust-item i { font-size: 1rem; color: var(--champagne); }
+    .trust-item span { font-size: .63rem; color: var(--slate); text-align: center; line-height: 1.35; }
+
+    /* Footer */
+    .card-foot {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: .7rem; color: rgba(255,255,255,.18);
+    }
+    .card-foot a { color: rgba(201,169,110,.4); transition: color .18s; }
+    .card-foot a:hover { color: var(--champagne); }
+
+    /* Loading state */
+    .btn-sign-in .spinner {
+      display: none; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-sign-in.loading .spinner { display: block; }
+    .btn-sign-in.loading .btn-icon,
+    .btn-sign-in.loading #btnText { opacity: .5; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 920px) {
+      .left { display: none; }
+      .right { background: var(--ink2); }
+    }
+    @media (max-width: 480px) {
+      .right { padding: 1.5rem 1.25rem; align-items: flex-start; padding-top: 2.5rem; }
+      .card-title { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════ LEFT PANEL ════ -->
+  <div class="left">
+    <!-- Ambient background SVG -->
+    <div class="left-bg" aria-hidden="true">
+      <svg viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="g1" cx="30%" cy="25%" r="55%">
+            <stop offset="0%" stop-color="#c9a96e" stop-opacity=".09"/>
+            <stop offset="100%" stop-color="#c9a96e" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="g2" cx="80%" cy="80%" r="50%">
+            <stop offset="0%" stop-color="#4a7fc1" stop-opacity=".07"/>
+            <stop offset="100%" stop-color="#4a7fc1" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="800" height="900" fill="url(#g1)"/>
+        <rect width="800" height="900" fill="url(#g2)"/>
+        <!-- Subtle grid lines -->
+        <g stroke="rgba(201,169,110,.04)" stroke-width="1">
+          <line x1="0" y1="200" x2="800" y2="200"/>
+          <line x1="0" y1="450" x2="800" y2="450"/>
+          <line x1="0" y1="700" x2="800" y2="700"/>
+          <line x1="200" y1="0" x2="200" y2="900"/>
+          <line x1="500" y1="0" x2="500" y2="900"/>
+        </g>
+        <!-- Decorative circle -->
+        <circle cx="680" cy="140" r="180" fill="none" stroke="rgba(201,169,110,.05)" stroke-width="1"/>
+        <circle cx="680" cy="140" r="120" fill="none" stroke="rgba(201,169,110,.05)" stroke-width="1"/>
+        <circle cx="100" cy="800" r="220" fill="none" stroke="rgba(74,127,193,.05)" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <div class="left-inner">
+      <!-- Top: School mark -->
+      <div class="school-mark">
+        <div class="school-logo-wrap">
+          {% if tenant.logo %}
+            <img src="{{ tenant.logo.url }}" alt="{{ tenant.name }} logo">
+          {% else %}
+            <span class="logo-initials">{{ tenant.name|slice:":3"|upper }}</span>
+          {% endif %}
+        </div>
+        <div class="school-name-block">
+          <small>Institutional Portal</small>
+          <strong>{{ tenant.name }}</strong>
+        </div>
+      </div>
+
+      <!-- Centre: Hero -->
+      <div class="hero">
+        <div class="hero-eyebrow">Academic Management System</div>
+        <h1 class="hero-title">
+          Your school,<br>
+          <em>brilliantly</em>
+          <span class="line-indent">managed.</span>
+        </h1>
+        <p class="hero-body">
+          A fully integrated ERP built for Nigerian institutions — covering academics, finance, hostel, communications and more, purpose-designed for {{ tenant.name }}.
+        </p>
+        <div class="stat-row">
+          <div class="stat-pill">
+            <i class="ph ph-graduation-cap"></i>
+            <span><strong>CBT</strong> Exams & Results</span>
+          </div>
+          <div class="stat-pill">
+            <i class="ph ph-bank"></i>
+            <span><strong>Paystack</strong> Finance Suite</span>
+          </div>
+          <div class="stat-pill">
+            <i class="ph ph-buildings"></i>
+            <span><strong>Hostel</strong> Management</span>
+          </div>
+        </div>
+
+        <div class="module-grid">
+          <div class="module-card mc-gold">
+            <div class="mc-icon mci-gold"><i class="ph ph-books"></i></div>
+            <div class="mc-label">Academic ERP</div>
+            <div class="mc-desc">CBT exams, results, timetable & class records</div>
+          </div>
+          <div class="module-card mc-blue">
+            <div class="mc-icon mci-blue"><i class="ph ph-bank"></i></div>
+            <div class="mc-label">Finance Suite</div>
+            <div class="mc-desc">Wallets, fee collection & Paystack gateway</div>
+          </div>
+          <div class="module-card mc-green">
+            <div class="mc-icon mci-green"><i class="ph ph-buildings"></i></div>
+            <div class="mc-label">Hostel Manager</div>
+            <div class="mc-desc">Bed allocation, exeats & incident reports</div>
+          </div>
+          <div class="module-card mc-purple">
+            <div class="mc-icon mci-purple"><i class="ph ph-chat-dots"></i></div>
+            <div class="mc-label">Communications</div>
+            <div class="mc-desc">Bulk email & SMS campaigns to parents</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: Footer -->
+      <div class="left-foot">
+        <p class="lf-credit">Built by <strong>Techmiary</strong> &mdash; Powering Nigeria's institutions</p>
+        <div class="lf-secure">
+          <i class="ph ph-shield-check"></i>
+          <span>256-bit SSL encrypted</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ RIGHT PANEL ════ -->
+  <div class="right">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-eyebrow">Secure Sign-in</div>
+        <h2 class="card-title">Welcome back.</h2>
+        <p class="card-sub">Choose your role and sign in to continue to your portal.</p>
+      </div>
+
+      <!-- Role selector -->
+      <div class="roles" role="tablist" aria-label="Select portal role">
+        <button class="role-btn active" id="tab-educator" role="tab" aria-selected="true" onclick="selectRole('educator')">
+          <i class="ph ph-chalkboard-teacher" aria-hidden="true"></i>
+          <span>Educator</span>
+        </button>
+        <button class="role-btn" id="tab-parent" role="tab" aria-selected="false" onclick="selectRole('parent')">
+          <i class="ph ph-users-three" aria-hidden="true"></i>
+          <span>Parent</span>
+        </button>
+        <button class="role-btn" id="tab-student" role="tab" aria-selected="false" onclick="selectRole('student')">
+          <i class="ph ph-student" aria-hidden="true"></i>
+          <span>Student</span>
+        </button>
+      </div>
+
+      <!-- Django messages -->
+      {% if messages %}
+      <div class="messages" aria-live="polite">
+        {% for message in messages %}
+        <div class="msg {% if message.tags == 'error' %}msg-error{% elif message.tags == 'success' %}msg-success{% else %}msg-info{% endif %}" role="alert">
+          <i class="ph {% if message.tags == 'error' %}ph-warning-circle{% elif message.tags == 'success' %}ph-check-circle{% else %}ph-info{% endif %}" aria-hidden="true"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Login form -->
+      <div id="form-area">
+        <form id="loginForm" method="POST" action="/staff/login/" autocomplete="on">
+          {% csrf_token %}
+          <div class="field">
+            <label class="field-label" id="userLabel" for="userInput">Staff Username</label>
+            <input class="field-input" type="text" id="userInput" name="username"
+                   required autocomplete="username" placeholder="Enter your username">
+          </div>
+          <div class="field">
+            <label class="field-label" for="passwordInput">Password</label>
+            <div class="pw-group">
+              <input class="field-input" type="password" id="passwordInput" name="password"
+                     required autocomplete="current-password" placeholder="••••••••••">
+              <button type="button" class="pw-eye" id="pwToggle" aria-label="Toggle password visibility">
+                <i class="ph ph-eye" id="pwIcon" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-meta">
+            <label class="remember">
+              <input type="checkbox" name="remember"> Remember me
+            </label>
+            <a href="{% url 'cbt:password_reset' %}" class="forgot">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn-sign-in" id="submitBtn">
+            <div class="spinner" aria-hidden="true"></div>
+            <i class="ph ph-sign-in btn-icon" aria-hidden="true"></i>
+            <span id="btnText">Sign In as Educator</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Parent redirect -->
+      <div id="parent-panel" role="region" aria-label="Parent portal redirect">
+        <div class="parent-icon" aria-hidden="true">
+          <i class="ph ph-users-three"></i>
+        </div>
+        <h3>Parent Portal</h3>
+        <p>Parents have a dedicated secure portal with a separate sign-in experience tailored for guardians.</p>
+        <a href="/parent/login/" class="btn-parent-portal">
+          <i class="ph ph-arrow-square-out" aria-hidden="true"></i>
+          Go to Parent Portal
+        </a>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider" aria-hidden="true">Secured by</div>
+
+      <!-- Trust signals -->
+      <div class="trust-bar">
+        <div class="trust-item">
+          <i class="ph ph-shield-check" aria-hidden="true"></i>
+          <span>One session<br>per device</span>
+        </div>
+        <div class="trust-item">
+          <i class="ph ph-lock-key" aria-hidden="true"></i>
+          <span>Encrypted<br>connection</span>
+        </div>
+        <div class="trust-item">
+          <i class="ph ph-clock-countdown" aria-hidden="true"></i>
+          <span>Auto session<br>timeout</span>
+        </div>
+      </div>
+
+      <div class="card-foot">
+        &copy; {{ current_year }} {{ tenant.name }} &mdash;
+        <a href="mailto:support@titmiary.edu.ng">support@titmiary.edu.ng</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const ROLES = {
+    educator: {
+      action: '/staff/login/',
+      name: 'username',
+      label: 'Staff Username',
+      placeholder: 'Enter your username',
+      btn: 'Sign In as Educator'
+    },
+    student: {
+      action: '/student/login/',
+      name: 'admission_number',
+      label: 'Admission Number',
+      placeholder: 'e.g. TIT/2024/001',
+      btn: 'Sign In as Student'
+    }
+  };
+
+  let currentRole = 'educator';
+
+  function selectRole(role) {
+    currentRole = role;
+    ['educator', 'parent', 'student'].forEach(r => {
+      const btn = document.getElementById('tab-' + r);
+      const isActive = r === role;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive);
+    });
+
+    const formArea = document.getElementById('form-area');
+    const parentPanel = document.getElementById('parent-panel');
+
+    if (role === 'parent') {
+      formArea.style.display = 'none';
+      parentPanel.style.display = 'block';
+      return;
+    }
+
+    formArea.style.display = 'block';
+    parentPanel.style.display = 'none';
+
+    const cfg = ROLES[role];
+    const inp = document.getElementById('userInput');
+    inp.name = cfg.name;
+    inp.placeholder = cfg.placeholder;
+    document.getElementById('userLabel').textContent = cfg.label;
+    document.getElementById('loginForm').action = cfg.action;
+    document.getElementById('btnText').textContent = cfg.btn;
+  }
+
+  // Password toggle
+  document.getElementById('pwToggle').addEventListener('click', () => {
+    const inp = document.getElementById('passwordInput');
+    const icon = document.getElementById('pwIcon');
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    icon.className = show ? 'ph ph-eye-slash' : 'ph ph-eye';
+  });
+
+  // Loading state on submit
+  document.getElementById('loginForm').addEventListener('submit', function () {
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    document.getElementById('btnText').textContent = 'Signing in…';
+  });
+</script>
+</body>
+</html>

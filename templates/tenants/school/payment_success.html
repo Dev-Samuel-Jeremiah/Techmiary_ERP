@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful | {{ tenant.name }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{--navy:#050c1a;--panel:#0f1e38;--border:rgba(255,255,255,.08);--gold:#e8b84b;--green:#34d399;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--navy);color:#dde4f0;
+         min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+    .card{max-width:480px;width:100%;background:var(--panel);border:1px solid var(--border);
+          border-radius:20px;padding:2.5rem;text-align:center;}
+    .icon{width:72px;height:72px;background:rgba(52,211,153,.12);border:2px solid rgba(52,211,153,.25);
+          border-radius:50%;display:flex;align-items:center;justify-content:center;
+          margin:0 auto 1.5rem;font-size:2rem;color:var(--green);}
+    h1{font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:.5rem;}
+    .sub{color:rgba(255,255,255,.5);font-size:.9rem;margin-bottom:1.75rem;line-height:1.6;}
+    .detail-box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;
+                padding:1.25rem;margin-bottom:1.75rem;text-align:left;}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;
+                font-size:.88rem;border-bottom:1px solid rgba(255,255,255,.05);}
+    .detail-row:last-child{border:none;}
+    .dl{color:rgba(255,255,255,.45);}
+    .dv{color:#fff;font-weight:600;}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;border-radius:10px;
+         font-size:.9rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;font-family:inherit;}
+    .btn-gold{background:linear-gradient(135deg,var(--gold),#c8901a);color:#000;
+              width:100%;justify-content:center;margin-bottom:.75rem;}
+    .btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:#dde4f0;
+               width:100%;justify-content:center;}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div style="font-size:2.5rem;margin-bottom:.75rem;">🎉</div>
+  <div class="icon"><i class="bi bi-check-lg"></i></div>
+  <h1>Payment Successful!</h1>
+  <p class="sub">
+    {{ tenant.name }} is now on the <strong style="color:#fff;">{{ plan.name }}</strong> plan.
+    Your subscription is active and all features are unlocked.
+  </p>
+
+  <div class="detail-box">
+    <div class="detail-row">
+      <span class="dl">School</span>
+      <span class="dv">{{ tenant.name }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="dl">Plan</span>
+      <span class="dv">{{ plan.name }}</span>
+    </div>
+    {% if student_count %}
+    <div class="detail-row">
+      <span class="dl">Students Billed</span>
+      <span class="dv">{{ student_count }}</span>
+    </div>
+    {% endif %}
+    <div class="detail-row">
+      <span class="dl">Billing Period</span>
+      <span class="dv">
+        {% if billing_cycle == 'TERM' %}Per Term (~90 days)
+        {% elif billing_cycle == 'SESSION' %}Per Session (~270 days)
+        {% elif billing_cycle == 'ANNUAL' %}Annual
+        {% else %}Monthly{% endif %}
+      </span>
+    </div>
+    {% if sub %}
+    <div class="detail-row">
+      <span class="dl">Valid Until</span>
+      <span class="dv">{{ sub.ends_at|date:"d M Y" }}</span>
+    </div>
+    {% endif %}
+    <div class="detail-row">
+      <span class="dl">Status</span>
+      <span class="dv" style="color:var(--green);">✓ Active</span>
+    </div>
+  </div>
+
+  <a href="/dashboard/" class="btn btn-gold">
+    <i class="bi bi-house-fill"></i> Go to Dashboard
+  </a>
+  <a href="/subscription/" class="btn btn-ghost">
+    <i class="bi bi-receipt"></i> View Subscription
+  </a>
+</div>
+</body>
+</html>

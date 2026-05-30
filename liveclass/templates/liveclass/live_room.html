@@ -1,0 +1,596 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ live_class.title }} – Live Class</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ink:#f2f0eb;--surface:#1b1b24;--surface2:#21212e;--surface3:#272736;
+  --rim:rgba(255,255,255,.06);--rim2:rgba(255,255,255,.1);--rim3:rgba(255,255,255,.16);
+  --champagne:#c9a96e;--champagne-lt:#e8c98a;--champagne-dim:rgba(201,169,110,.12);
+  --slate:rgba(255,255,255,.38);--slate2:rgba(255,255,255,.58);
+  --green:#35c58b;--green-dim:rgba(53,197,139,.12);--green-border:rgba(53,197,139,.24);
+  --red:#ef6b73;--red-dim:rgba(239,107,115,.12);--red-border:rgba(239,107,115,.24);
+  --blue:#5ea2ff;--blue-dim:rgba(94,162,255,.12);--blue-border:rgba(94,162,255,.24);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Outfit',sans-serif;background:#14141b;color:var(--ink);overflow:hidden}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  height:52px;background:var(--surface);border-bottom:1px solid var(--rim2);
+  display:flex;align-items:center;padding:0 1.25rem;gap:.75rem;flex-shrink:0;
+}
+.topbar-back{color:var(--champagne);text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:.4rem}
+.topbar-title{font-size:.95rem;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-course{font-size:.8rem;color:var(--slate2)}
+
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-dot.live{background:var(--green);box-shadow:0 0 8px var(--green)}
+.status-dot.scheduled{background:var(--blue)}
+.status-dot.ended{background:var(--slate)}
+
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:5px;font-size:.72rem;font-weight:600;letter-spacing:.3px}
+.badge.live{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.badge.scheduled{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
+.badge.ended{background:var(--rim);color:var(--slate);border:1px solid var(--rim3)}
+
+/* ─── LAYOUT ─── */
+.layout{display:flex;height:calc(100vh - 52px)}
+
+/* ─── VIDEO PANEL ─── */
+.video-panel{flex:1;display:flex;flex-direction:column;min-width:0}
+.jitsi-wrap{flex:1;position:relative;background:#000}
+#jitsi-container{width:100%;height:100%}
+
+/* Waiting / Ended overlays */
+.overlay{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1rem;
+  background:#0d0d12;text-align:center;padding:2rem;
+}
+.overlay i{font-size:3.5rem;color:var(--champagne)}
+.overlay h2{font-size:1.3rem;font-weight:600}
+.overlay p{color:var(--slate2);font-size:.9rem;max-width:340px}
+
+/* ─── TEACHER CONTROLS ─── */
+.teacher-bar{
+  background:var(--surface);border-top:1px solid var(--rim2);
+  padding:.6rem 1.25rem;display:flex;align-items:center;gap:.75rem;
+  flex-shrink:0;
+}
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem 1.1rem;
+  border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;
+  text-decoration:none;border:none;font-family:inherit;transition:.2s}
+.btn-start{background:var(--green);color:#0d1a13}
+.btn-start:hover{filter:brightness(1.1)}
+.btn-end{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.btn-end:hover{background:var(--red);color:#fff}
+.btn-ghost{background:transparent;color:var(--slate2);border:1px solid var(--rim3)}
+.btn-ghost:hover{background:var(--rim2);color:var(--ink)}
+.bar-spacer{flex:1}
+.bar-stat{font-size:.8rem;color:var(--slate2);display:flex;align-items:center;gap:.35rem}
+
+/* ─── CHAT PANEL ─── */
+.chat-panel{
+  width:320px;flex-shrink:0;background:var(--surface2);
+  border-left:1px solid var(--rim2);display:flex;flex-direction:column;
+}
+.chat-header{
+  padding:.85rem 1rem;border-bottom:1px solid var(--rim2);
+  font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:.5rem;
+}
+.chat-header i{color:var(--champagne)}
+.chat-messages{flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.6rem}
+.chat-messages::-webkit-scrollbar{width:4px}
+.chat-messages::-webkit-scrollbar-track{background:transparent}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--rim3);border-radius:4px}
+
+.msg{max-width:94%;display:flex;flex-direction:column;gap:.15rem}
+.msg.mine{align-self:flex-end;align-items:flex-end}
+.msg.other{align-self:flex-start}
+.msg-sender{font-size:.72rem;color:var(--slate);font-weight:500}
+.msg-sender.teacher-label{color:var(--champagne)}
+.msg-bubble{
+  padding:.45rem .75rem;border-radius:10px;font-size:.85rem;line-height:1.45;
+  word-break:break-word;max-width:260px;
+}
+.msg.mine .msg-bubble{background:var(--champagne-dim);border:1px solid rgba(201,169,110,.2);color:var(--ink)}
+.msg.other .msg-bubble{background:var(--surface3);border:1px solid var(--rim2);color:var(--ink)}
+.msg-time{font-size:.68rem;color:var(--slate)}
+
+/* system messages */
+.sys-msg{
+  text-align:center;font-size:.75rem;color:var(--slate);
+  padding:.25rem .5rem;background:var(--rim);border-radius:6px;align-self:center;
+}
+
+.chat-input-area{border-top:1px solid var(--rim2);padding:.75rem}
+.chat-input-row{display:flex;gap:.5rem}
+.chat-input{
+  flex:1;background:var(--surface3);border:1px solid var(--rim3);
+  color:var(--ink);border-radius:8px;padding:.55rem .85rem;
+  font-family:inherit;font-size:.88rem;outline:none;transition:.2s;
+}
+.chat-input:focus{border-color:var(--champagne)}
+.chat-input::placeholder{color:var(--slate)}
+.send-btn{
+  background:var(--champagne);color:#111;border:none;border-radius:8px;
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:1rem;flex-shrink:0;transition:.2s;
+}
+.send-btn:hover{background:var(--champagne-lt)}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ─── REACTION BAR ─── */
+.reaction-bar{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:.4rem;z-index:10;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.1);border-radius:40px;
+  padding:.35rem .5rem;
+}
+.reaction-bar.hidden{display:none}
+.rxn-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:1.5rem;line-height:1;padding:.25rem .3rem;border-radius:50%;
+  transition:transform .15s,background .15s;position:relative;
+}
+.rxn-btn:hover{transform:scale(1.3);background:rgba(255,255,255,.1)}
+.rxn-btn:active{transform:scale(.95)}
+/* cooldown flash */
+.rxn-btn.cooling{opacity:.4;pointer-events:none}
+
+/* floating emoji */
+@keyframes floatUp{
+  0%  {opacity:1;transform:translateY(0) scale(1)}
+  60% {opacity:1;transform:translateY(-120px) scale(1.2)}
+  100%{opacity:0;transform:translateY(-200px) scale(.8)}
+}
+.float-emoji{
+  position:absolute;font-size:2rem;pointer-events:none;
+  animation:floatUp 2s ease-out forwards;
+  z-index:20;
+}
+
+/* reaction count badge */
+.rxn-count{
+  position:absolute;top:-6px;right:-6px;
+  background:var(--champagne);color:#111;
+  font-size:.6rem;font-weight:700;
+  min-width:16px;height:16px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 3px;opacity:0;transition:opacity .2s;
+}
+.rxn-count.show{opacity:1}
+
+/* reaction toast in chat */
+.reaction-toast{
+  align-self:center;font-size:.8rem;color:var(--slate2);
+  background:var(--rim);border-radius:6px;padding:.2rem .6rem;
+  display:flex;align-items:center;gap:.3rem;
+}
+
+/* mobile: collapse chat */
+@media(max-width:700px){
+  .chat-panel{display:none}
+  .chat-panel.open{display:flex;position:fixed;inset:0;z-index:100;width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="{% if is_teacher %}{% url 'liveclass:teacher_live_classes' live_class.course.id %}{% else %}{% url 'liveclass:student_live_classes' %}{% endif %}" class="topbar-back">
+    <i class="bi bi-arrow-left"></i> Back
+  </a>
+  <div class="status-dot {{ live_class.status }}" id="statusDot"></div>
+  <div style="flex:1;min-width:0">
+    <div class="topbar-title">{{ live_class.title }}</div>
+    <div class="topbar-course">{{ live_class.course.name }}</div>
+  </div>
+  <span class="badge {{ live_class.status }}" id="statusBadge">{{ live_class.get_status_display }}</span>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- VIDEO PANEL -->
+  <div class="video-panel">
+    <div class="jitsi-wrap">
+
+      <!-- Waiting overlay (shown when scheduled) -->
+      <div class="overlay" id="waitingOverlay" {% if live_class.status != 'scheduled' %}style="display:none"{% endif %}>
+        <i class="bi bi-clock-history"></i>
+        <h2>Class Not Started Yet</h2>
+        <p>Scheduled for {{ live_class.scheduled_at|date:"D, d M Y – H:i" }}.<br>
+          {% if is_teacher %}Click <strong>Start Class</strong> below when ready.{% else %}The teacher will start the session shortly.{% endif %}
+        </p>
+      </div>
+
+      <!-- Ended overlay -->
+      <div class="overlay" id="endedOverlay" {% if live_class.status != 'ended' %}style="display:none"{% endif %}>
+        <i class="bi bi-check-circle"></i>
+        <h2>Class Has Ended</h2>
+        <p>This live session has finished. Check your course materials for recordings or notes.</p>
+        {% if is_teacher %}
+        <a href="{% url 'liveclass:attendance' live_class.room_id %}" class="btn btn-ghost"><i class="bi bi-people"></i> View Attendance</a>
+        {% endif %}
+      </div>
+
+      <!-- Jitsi container -->
+      <div id="jitsi-container" {% if live_class.status != 'live' %}style="display:none"{% endif %}></div>
+
+      <!-- Reaction Bar (shown when live) -->
+      <div class="reaction-bar {% if live_class.status != 'live' %}hidden{% endif %}" id="reactionBar">
+        <button class="rxn-btn" data-emoji="👏" title="Clap" onclick="sendReaction('👏')">👏<span class="rxn-count" id="cnt-clap"></span></button>
+        <button class="rxn-btn" data-emoji="✋" title="Raise Hand" onclick="sendReaction('✋')">✋<span class="rxn-count" id="cnt-hand"></span></button>
+        <button class="rxn-btn" data-emoji="❤️" title="Heart" onclick="sendReaction('❤️')">❤️<span class="rxn-count" id="cnt-heart"></span></button>
+        <button class="rxn-btn" data-emoji="😂" title="Laugh" onclick="sendReaction('😂')">😂<span class="rxn-count" id="cnt-laugh"></span></button>
+        <button class="rxn-btn" data-emoji="😮" title="Wow" onclick="sendReaction('😮')">😮<span class="rxn-count" id="cnt-wow"></span></button>
+        <button class="rxn-btn" data-emoji="🔥" title="Fire" onclick="sendReaction('🔥')">🔥<span class="rxn-count" id="cnt-fire"></span></button>
+      </div>
+    </div>
+
+    <!-- Teacher controls bar -->
+    {% if is_teacher %}
+    <div class="teacher-bar">
+      <button class="btn btn-start" id="startBtn"
+        {% if live_class.status != 'scheduled' %}style="display:none"{% endif %}
+        onclick="startClass()">
+        <i class="bi bi-broadcast"></i> Start Class
+      </button>
+      <button class="btn btn-end" id="endBtn"
+        {% if live_class.status != 'live' %}style="display:none"{% endif %}
+        onclick="endClass()">
+        <i class="bi bi-stop-circle"></i> End Class
+      </button>
+      <span class="bar-spacer"></span>
+      <span class="bar-stat"><i class="bi bi-people"></i> <span id="attendeeCount">0</span> in room</span>
+      <a href="{% url 'liveclass:attendance' live_class.room_id %}" class="btn btn-ghost" style="font-size:.8rem">
+        <i class="bi bi-list-check"></i> Attendance
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-header">
+      <i class="bi bi-chat-dots"></i> Class Chat
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      {% for msg in chat_messages %}
+        <div class="msg {% if msg.sender == request.user %}mine{% else %}other{% endif %}">
+          <span class="msg-sender {% if msg.sender == live_class.teacher %}teacher-label{% endif %}">
+            {% if msg.sender == live_class.teacher %}<i class="bi bi-patch-check-fill" style="font-size:.65rem"></i> {% endif %}
+            {{ msg.sender.get_full_name|default:msg.sender.username }}
+          </span>
+          <div class="msg-bubble">{{ msg.message }}</div>
+          <span class="msg-time">{{ msg.sent_at|time:"H:i" }}</span>
+        </div>
+      {% empty %}
+        <div class="sys-msg" id="noMsgHint">No messages yet. Say hello! 👋</div>
+      {% endfor %}
+    </div>
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <input class="chat-input" id="chatInput" type="text"
+          placeholder="{% if live_class.status == 'ended' %}Class has ended{% else %}Type a message…{% endif %}"
+          {% if live_class.status == 'ended' %}disabled{% endif %}
+          maxlength="500" autocomplete="off">
+        <button class="send-btn" id="sendBtn"
+          {% if live_class.status == 'ended' %}disabled{% endif %}
+          onclick="sendMessage()">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Jitsi SDK -->
+<script src="https://meet.jit.si/external_api.js"></script>
+
+<script>
+const ROOM_ID   = "{{ live_class.room_id }}";
+const JITSI_ROOM = "{{ jitsi_room }}";
+const IS_TEACHER = {{ is_teacher|yesno:"true,false" }};
+const INITIAL_STATUS = "{{ live_class.status }}";
+const CURRENT_USER = "{{ request.user.get_full_name|default:request.user.username }}";
+const CSRF_TOKEN = "{{ csrf_token }}";
+
+let jitsiApi = null;
+let socket = null;
+let attendees = new Set();
+
+/* ─── WebSocket ─── */
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  socket = new WebSocket(`${proto}://${location.host}/ws/liveclass/${ROOM_ID}/`);
+
+  socket.onopen = () => console.log('WS connected');
+
+  socket.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === 'chat_message') appendMessage(data);
+    else if (data.type === 'user_event') handleUserEvent(data);
+    else if (data.type === 'class_status') handleStatusChange(data.status);
+    else if (data.type === 'reaction') handleReaction(data);
+  };
+
+  socket.onclose = () => {
+    setTimeout(connectWS, 3000); // auto-reconnect
+  };
+}
+
+/* ─── Chat ─── */
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg || !socket || socket.readyState !== WebSocket.OPEN) return;
+  socket.send(JSON.stringify({ type: 'chat_message', message: msg }));
+  input.value = '';
+}
+
+document.getElementById('chatInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+function appendMessage(data) {
+  const hint = document.getElementById('noMsgHint');
+  if (hint) hint.remove();
+
+  const box = document.getElementById('chatMessages');
+  const isMe = data.user_id == {{ request.user.id }};
+  const div = document.createElement('div');
+  div.className = `msg ${isMe ? 'mine' : 'other'}`;
+  div.innerHTML = `
+    <span class="msg-sender ${data.is_teacher ? 'teacher-label' : ''}">
+      ${data.is_teacher ? '<i class="bi bi-patch-check-fill" style="font-size:.65rem"></i> ' : ''}
+      ${escHtml(data.display_name)}
+    </span>
+    <div class="msg-bubble">${escHtml(data.message)}</div>
+    <span class="msg-time">${data.sent_at}</span>
+  `;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function handleUserEvent(data) {
+  const box = document.getElementById('chatMessages');
+  const sys = document.createElement('div');
+  sys.className = 'sys-msg';
+  sys.textContent = data.event === 'joined'
+    ? `${data.display_name} joined`
+    : `${data.display_name} left`;
+  box.appendChild(sys);
+  box.scrollTop = box.scrollHeight;
+
+  if (data.event === 'joined') attendees.add(data.user_id);
+  else attendees.delete(data.user_id);
+  document.getElementById('attendeeCount').textContent = attendees.size;
+}
+
+/* ─── Class Status ─── */
+function handleStatusChange(status) {
+  // Update badge + dot
+  const badge = document.getElementById('statusBadge');
+  const dot = document.getElementById('statusDot');
+  badge.className = `badge ${status}`;
+  badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+  dot.className = `status-dot ${status}`;
+
+  if (status === 'live') {
+    document.getElementById('waitingOverlay').style.display = 'none';
+    document.getElementById('endedOverlay').style.display = 'none';
+    document.getElementById('jitsi-container').style.display = 'block';
+    document.getElementById('reactionBar').classList.remove('hidden');
+    if (document.getElementById('startBtn')) document.getElementById('startBtn').style.display = 'none';
+    if (document.getElementById('endBtn')) document.getElementById('endBtn').style.display = 'inline-flex';
+    if (!jitsiApi) initJitsi();
+    // enable chat
+    document.getElementById('chatInput').disabled = false;
+    document.getElementById('chatInput').placeholder = 'Type a message…';
+    document.getElementById('sendBtn').disabled = false;
+  }
+
+  if (status === 'ended') {
+    document.getElementById('waitingOverlay').style.display = 'none';
+    document.getElementById('jitsi-container').style.display = 'none';
+    document.getElementById('endedOverlay').style.display = 'flex';
+    document.getElementById('reactionBar').classList.add('hidden');
+    if (document.getElementById('endBtn')) document.getElementById('endBtn').style.display = 'none';
+    if (jitsiApi) { jitsiApi.dispose(); jitsiApi = null; }
+    document.getElementById('chatInput').disabled = true;
+    document.getElementById('chatInput').placeholder = 'Class has ended';
+    document.getElementById('sendBtn').disabled = true;
+  }
+}
+
+/* ─── Teacher Controls ─── */
+async function startClass() {
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Starting…';
+  try {
+    const res = await fetch(`/liveclass/room/${ROOM_ID}/start/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF_TOKEN }
+    });
+    const data = await res.json();
+    if (data.status === 'live') {
+      // WS will broadcast to everyone; also update locally immediately
+      socket.send(JSON.stringify({ type: 'class_control', action: 'start' }));
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-broadcast"></i> Start Class';
+  }
+}
+
+async function endClass() {
+  if (!confirm('End this live class for everyone?')) return;
+  const btn = document.getElementById('endBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Ending…';
+  try {
+    const res = await fetch(`/liveclass/room/${ROOM_ID}/end/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF_TOKEN }
+    });
+    const data = await res.json();
+    if (data.status === 'ended') {
+      socket.send(JSON.stringify({ type: 'class_control', action: 'end' }));
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-stop-circle"></i> End Class';
+  }
+}
+
+/* ─── Jitsi ─── */
+function initJitsi() {
+  const domain = 'meet.jit.si';
+  const options = {
+    roomName: JITSI_ROOM,
+    parentNode: document.getElementById('jitsi-container'),
+    width: '100%',
+    height: '100%',
+    configOverwrite: {
+      startWithAudioMuted: !IS_TEACHER,
+      startWithVideoMuted: !IS_TEACHER,
+      disableDeepLinking: true,
+      prejoinPageEnabled: false,
+      enableWelcomePage: false,
+      desktopSharingChromeExtId: null,
+      desktopSharingChromeSources: ['screen', 'window', 'tab'],
+      desktopSharingFirefoxDisabled: false,
+      screenshotCapture: { enabled: false },
+    },
+    interfaceConfigOverwrite: {
+      TOOLBAR_ALWAYS_VISIBLE: true,
+      SHOW_JITSI_WATERMARK: false,
+      SHOW_WATERMARK_FOR_GUESTS: false,
+      DEFAULT_BACKGROUND: '#14141b',
+      MOBILE_APP_PROMO: false,
+      TOOLBAR_BUTTONS: [
+        'microphone', 'camera', 'desktop', 'fullscreen',
+        'fodeviceselection', 'hangup', 'chat', 'recording',
+        'livestreaming', 'etherpad', 'sharedvideo', 'settings',
+        'raisehand', 'videoquality', 'filmstrip', 'invite',
+        'feedback', 'stats', 'shortcuts', 'tileview',
+        'select-background', 'download', 'help', 'mute-everyone',
+        'security', 'participants-pane',
+      ],
+    },
+    userInfo: { displayName: CURRENT_USER },
+  };
+
+  jitsiApi = new JitsiMeetExternalAPI(domain, options);
+
+  jitsiApi.addEventListener('participantJoined', () => {
+    const count = jitsiApi.getNumberOfParticipants();
+    document.getElementById('attendeeCount').textContent = count;
+  });
+  jitsiApi.addEventListener('participantLeft', () => {
+    const count = jitsiApi.getNumberOfParticipants();
+    document.getElementById('attendeeCount').textContent = count;
+  });
+  jitsiApi.addEventListener('readyToClose', () => {
+    if (IS_TEACHER) endClass();
+  });
+}
+
+/* ─── Reactions ─── */
+const reactionCooldowns = {};
+const reactionCounts = {};
+const emojiCountMap = {
+  '👏':'clap','✋':'hand','❤️':'heart','😂':'laugh','😮':'wow','🔥':'fire'
+};
+
+function sendReaction(emoji) {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return;
+  if (reactionCooldowns[emoji]) return;
+
+  socket.send(JSON.stringify({
+    type: 'reaction',
+    emoji: emoji,
+    display_name: CURRENT_USER,
+  }));
+
+  // 2s cooldown per emoji
+  reactionCooldowns[emoji] = true;
+  const btn = document.querySelector(`.rxn-btn[data-emoji="${emoji}"]`);
+  if (btn) { btn.classList.add('cooling'); }
+  setTimeout(() => {
+    reactionCooldowns[emoji] = false;
+    if (btn) btn.classList.remove('cooling');
+  }, 2000);
+}
+
+function handleReaction(data) {
+  const emoji = data.emoji;
+  const wrap = document.querySelector('.jitsi-wrap');
+  if (!wrap) return;
+
+  // Spawn floating emoji at random x position
+  const el = document.createElement('div');
+  el.className = 'float-emoji';
+  el.textContent = emoji;
+  const x = 10 + Math.random() * 80; // 10%–90% of width
+  el.style.left = x + '%';
+  el.style.bottom = '60px';
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 2100);
+
+  // Update count badge
+  const key = emojiCountMap[emoji];
+  if (key) {
+    reactionCounts[key] = (reactionCounts[key] || 0) + 1;
+    const badge = document.getElementById(`cnt-${key}`);
+    if (badge) {
+      badge.textContent = reactionCounts[key] > 99 ? '99+' : reactionCounts[key];
+      badge.classList.add('show');
+      clearTimeout(badge._timer);
+      badge._timer = setTimeout(() => {
+        badge.classList.remove('show');
+        reactionCounts[key] = 0;
+      }, 3000);
+    }
+  }
+
+  // Show toast in chat for raise hand
+  if (emoji === '✋') {
+    const box = document.getElementById('chatMessages');
+    const toast = document.createElement('div');
+    toast.className = 'reaction-toast';
+    toast.innerHTML = `✋ <strong>${escHtml(data.display_name)}</strong> raised their hand`;
+    box.appendChild(toast);
+    box.scrollTop = box.scrollHeight;
+    setTimeout(() => toast.remove(), 8000);
+  }
+}
+
+/* ─── Init ─── */
+escHtml = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+connectWS();
+
+// If already live when page loads, start Jitsi
+if (INITIAL_STATUS === 'live') {
+  initJitsi();
+}
+
+// Auto-scroll chat
+const chatBox = document.getElementById('chatMessages');
+if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Received | Techmiary ERP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root{--navy:#070d1e;--gold:#d4a843;--green:#22c55e;--panel:#111c38;--border:rgba(255,255,255,.07);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"DM Sans",sans-serif;background:var(--navy);min-height:100vh;
+         display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;}
+    .card{max-width:520px;width:100%;}
+    .icon-wrap{width:88px;height:88px;border-radius:50%;
+               background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);
+               display:flex;align-items:center;justify-content:center;
+               margin:0 auto 1.75rem;font-size:2.2rem;color:var(--green);}
+    h1{font-family:"Syne",sans-serif;font-size:1.9rem;font-weight:800;color:#fff;margin-bottom:.5rem;}
+    .sub{color:rgba(255,255,255,.5);font-size:.95rem;line-height:1.6;margin-bottom:2rem;}
+
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:2rem;text-align:left;}
+    .info-item{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;}
+    .info-item .label{font-size:.72rem;color:rgba(255,255,255,.35);text-transform:uppercase;
+                      letter-spacing:.5px;margin-bottom:.3rem;}
+    .info-item .value{font-size:.88rem;font-weight:600;color:#fff;}
+    .info-item .value i{color:var(--gold);margin-right:.3rem;}
+
+    .timeline{background:var(--panel);border:1px solid var(--border);border-radius:14px;
+              padding:1.4rem 1.6rem;margin-bottom:2rem;text-align:left;}
+    .timeline-title{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.4);
+                    text-transform:uppercase;letter-spacing:.5px;margin-bottom:1.1rem;}
+    .tl-item{display:flex;align-items:flex-start;gap:.85rem;padding:.6rem 0;
+             border-bottom:1px solid rgba(255,255,255,.04);}
+    .tl-item:last-child{border-bottom:none;}
+    .tl-dot{width:28px;height:28px;border-radius:50%;flex-shrink:0;
+            display:flex;align-items:center;justify-content:center;font-size:.8rem;}
+    .tl-dot.done{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.2);color:var(--green);}
+    .tl-dot.pending{background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.2);color:var(--gold);}
+    .tl-dot.future{background:rgba(255,255,255,.04);border:1px solid var(--border);color:rgba(255,255,255,.2);}
+    .tl-body .title{font-size:.85rem;font-weight:600;color:#fff;}
+    .tl-body .desc{font-size:.76rem;color:rgba(255,255,255,.4);margin-top:.15rem;}
+
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 1.75rem;
+         border-radius:10px;font-size:.92rem;font-weight:700;text-decoration:none;
+         transition:all .15s;}
+    .btn-ghost{border:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.5);
+               background:rgba(255,255,255,.03);}
+    .btn-ghost:hover{color:#fff;border-color:rgba(255,255,255,.2);}
+
+    .footer-note{margin-top:2rem;font-size:.76rem;color:rgba(255,255,255,.2);}
+    .footer-note a{color:rgba(212,168,67,.45);}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="icon-wrap"><i class="ph ph-paper-plane-tilt"></i></div>
+  <h1>Application Received!</h1>
+  <p class="sub">
+    Thank you for registering your school on Techmiary ERP.
+    Our team will review your application and reach out within <strong style="color:#fff;">24 hours</strong>.
+  </p>
+
+  <div class="info-grid">
+    <div class="info-item">
+      <div class="label">Check Your Email</div>
+      <div class="value"><i class="ph ph-envelope-simple"></i> Confirmation sent</div>
+    </div>
+    <div class="info-item">
+      <div class="label">Trial Duration</div>
+      <div class="value"><i class="ph ph-timer"></i> 14 days free</div>
+    </div>
+    <div class="info-item">
+      <div class="label">Payment Required</div>
+      <div class="value"><i class="ph ph-x-circle" style="color:#4ade80;"></i> Not yet</div>
+    </div>
+    <div class="info-item">
+      <div class="label">Support</div>
+      <div class="value"><i class="ph ph-headset"></i> Included</div>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-title">What happens next</div>
+    <div class="tl-item">
+      <div class="tl-dot done"><i class="ph ph-check"></i></div>
+      <div class="tl-body">
+        <div class="title">Application Submitted</div>
+        <div class="desc">We've received your registration. A confirmation email is on its way.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot pending"><i class="ph ph-clock"></i></div>
+      <div class="tl-body">
+        <div class="title">Review (within 24 hrs)</div>
+        <div class="desc">Our team reviews your application and approves your account.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"><i class="ph ph-globe"></i></div>
+      <div class="tl-body">
+        <div class="title">Portal Goes Live</div>
+        <div class="desc">You'll receive your subdomain URL and admin login credentials by email.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"><i class="ph ph-rocket-launch"></i></div>
+      <div class="tl-body">
+        <div class="title">Onboard & Go Live</div>
+        <div class="desc">Add your classes, staff and students — guided by our onboarding wizard.</div>
+      </div>
+    </div>
+  </div>
+
+  <a href="{% url 'public_site:landing' %}" class="btn btn-ghost">
+    <i class="ph ph-arrow-left"></i> Back to Homepage
+  </a>
+
+  <div class="footer-note">
+    Questions? Email <a href="mailto:support@titmiary.edu.ng">support@titmiary.edu.ng</a>
+  </div>
+</div>
+</body>
+</html>

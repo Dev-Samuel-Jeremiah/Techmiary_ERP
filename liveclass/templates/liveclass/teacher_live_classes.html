@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Classes – {{ course.name }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ink:#f2f0eb; --surface:#1b1b24; --surface2:#21212e; --surface3:#272736;
+  --rim:rgba(255,255,255,.06); --rim2:rgba(255,255,255,.1); --rim3:rgba(255,255,255,.16);
+  --champagne:#c9a96e; --champagne-lt:#e8c98a; --champagne-dim:rgba(201,169,110,.12);
+  --slate:rgba(255,255,255,.38); --slate2:rgba(255,255,255,.58);
+  --green:#35c58b; --green-dim:rgba(53,197,139,.12); --green-border:rgba(53,197,139,.24);
+  --red:#ef6b73; --red-dim:rgba(239,107,115,.12); --red-border:rgba(239,107,115,.24);
+  --blue:#5ea2ff; --blue-dim:rgba(94,162,255,.12); --blue-border:rgba(94,162,255,.24);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#14141b;color:var(--ink);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--rim2);padding:1rem 2rem;display:flex;align-items:center;gap:1rem}
+.topbar a{color:var(--champagne);text-decoration:none;font-size:.9rem}
+.topbar h1{font-size:1.1rem;font-weight:600;flex:1}
+.container{max-width:900px;margin:2rem auto;padding:0 1.5rem}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.page-title{font-size:1.4rem;font-weight:600}
+.page-subtitle{color:var(--slate2);font-size:.9rem;margin-top:.25rem}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.2rem;border-radius:8px;font-size:.9rem;font-weight:500;cursor:pointer;text-decoration:none;border:none;transition:.2s}
+.btn-primary{background:var(--champagne);color:#111}
+.btn-primary:hover{background:var(--champagne-lt)}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-ghost{background:transparent;color:var(--slate2);border:1px solid var(--rim3)}
+.btn-ghost:hover{background:var(--rim2);color:var(--ink)}
+.card{background:var(--surface2);border:1px solid var(--rim2);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem}
+.card-icon{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
+.card-icon.live{background:var(--green-dim);color:var(--green)}
+.card-icon.scheduled{background:var(--blue-dim);color:var(--blue)}
+.card-icon.ended{background:var(--rim);color:var(--slate)}
+.card-body{flex:1}
+.card-title{font-size:1rem;font-weight:600}
+.card-meta{color:var(--slate2);font-size:.82rem;margin-top:.25rem}
+.card-actions{display:flex;gap:.5rem;flex-shrink:0}
+.badge{display:inline-block;padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600}
+.badge.live{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.badge.scheduled{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
+.badge.ended{background:var(--rim);color:var(--slate);border:1px solid var(--rim3)}
+.empty{text-align:center;padding:4rem 2rem;color:var(--slate)}
+.empty i{font-size:3rem;display:block;margin-bottom:1rem;color:var(--rim3)}
+.alert{padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem}
+.alert-success{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.alert-error{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="{% url 'classroom:teacher_course_detail' course.id %}"><i class="bi bi-arrow-left"></i> {{ course.name }}</a>
+  <h1>Live Classes</h1>
+  <a href="{% url 'liveclass:create_live_class' course.id %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Schedule Class</a>
+</div>
+
+<div class="container">
+  {% for msg in messages %}
+    <div class="alert {% if msg.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">{{ msg }}</div>
+  {% endfor %}
+
+  {% if not live_classes %}
+    <div class="empty">
+      <i class="bi bi-camera-video-off"></i>
+      <p>No live classes scheduled yet.</p>
+      <a href="{% url 'liveclass:create_live_class' course.id %}" class="btn btn-primary" style="margin-top:1rem">Schedule Your First Class</a>
+    </div>
+  {% else %}
+    {% for lc in live_classes %}
+    <div class="card">
+      <div class="card-icon {{ lc.status }}">
+        {% if lc.status == 'live' %}<i class="bi bi-broadcast"></i>
+        {% elif lc.status == 'scheduled' %}<i class="bi bi-calendar-event"></i>
+        {% else %}<i class="bi bi-check-circle"></i>{% endif %}
+      </div>
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <span class="card-title">{{ lc.title }}</span>
+          <span class="badge {{ lc.status }}">{{ lc.get_status_display }}</span>
+        </div>
+        <div class="card-meta">
+          <i class="bi bi-clock"></i> {{ lc.scheduled_at|date:"D, d M Y – H:i" }}
+          {% if lc.status == 'ended' and lc.attendances.count %}
+            &nbsp;·&nbsp;<i class="bi bi-people"></i> {{ lc.attendances.count }} attended
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-actions">
+        {% if lc.status != 'ended' %}
+          <a href="{% url 'liveclass:enter_live_class' lc.room_id %}" class="btn btn-primary"><i class="bi bi-camera-video"></i> Enter</a>
+        {% endif %}
+        {% if lc.status == 'ended' %}
+          <a href="{% url 'liveclass:attendance' lc.room_id %}" class="btn btn-ghost"><i class="bi bi-people"></i> Attendance</a>
+        {% endif %}
+        <a href="{% url 'liveclass:delete_live_class' lc.room_id %}" class="btn btn-danger" onclick="return confirm('Delete this live class?')"><i class="bi bi-trash3"></i></a>
+      </div>
+    </div>
+    {% endfor %}
+  {% endif %}
+</div>
+</body>
+</html>

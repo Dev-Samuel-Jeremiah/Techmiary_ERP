@@ -1,0 +1,171 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+{% if messages %}
+
+:root {
+    --primary: #1f3a5f;
+    --secondary: #e9eef5;
+    --accent: #4f8df5;
+    --border: #cfd6df;
+    --bg: #f4f6f9;
+}
+
+.attendance-wrapper {
+    max-width: 1000px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.page-header h2 {
+    color: var(--primary);
+    font-weight: 700;
+    margin: 0;
+}
+
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+.attendance-table th,
+.attendance-table td {
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.attendance-table th {
+    background-color: var(--secondary);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.attendance-table tr:nth-child(even) td {
+    background-color: #f9f9f9;
+}
+
+select {
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background-color: #fff;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-light {
+    background-color: #f5f5f5;
+    color: var(--primary);
+    border: 1px solid var(--border);
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 10px;
+}
+</style>
+
+<div class="attendance-wrapper">
+
+    <div class="page-header">
+        <h2>Edit Attendance — {{ school_class.name }} on {{ date_selected }}</h2>
+    </div>
+
+    <form method="post" id="attendance-form">
+        {% csrf_token %}
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ record.student.full_name }}</td>
+                    <td>
+                        <select name="status_{{ record.student.id }}">
+                            <option value="P" {% if record.status == 'P' %}selected{% endif %}>Present</option>
+                            <option value="A" {% if record.status == 'A' %}selected{% endif %}>Absent</option>
+                        </select>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn-primary" style="margin-top:20px;">Update Attendance</button>
+    </form>
+
+    <a href="" class="btn-light">⬅ Back to Summary</a>
+
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("attendance-form");
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const url = form.action || window.location.href;
+        const formData = new FormData(form);
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.fire({
+                icon: data.status, // success, error, warning, info
+                title: data.status.charAt(0).toUpperCase() + data.status.slice(1),
+                text: data.message,
+                confirmButtonColor: "#2563eb"
+            });
+        })
+        .catch(err => {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Something went wrong. Please try again.",
+                confirmButtonColor: "#2563eb"
+            });
+            console.error(err);
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+{% endblock %}

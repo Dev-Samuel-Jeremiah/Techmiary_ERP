@@ -1,0 +1,134 @@
+{% extends "dashboard/student_base.html" %}
+{% load classroom_dict_filters %}
+
+{% block title %}{{ assignment.title }} | Student Dashboard{% endblock %}
+
+{% block extra_head %}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    body {
+        background-color: #f8f9fa;
+        font-family: Arial, sans-serif;
+    }
+    .container {
+        max-width: 900px;
+        margin: 30px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+    }
+    h2 { color: #1f3a5f; }
+    h4 { margin-top: 20px; }
+    textarea {
+        width: 100%;
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+    .btn { margin-top: 10px; }
+    .completed {
+        color: green;
+        font-weight: bold;
+    }
+    .file-section { margin-top: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <h2>{{ assignment.title }}</h2>
+    <p>{{ assignment.description }}</p>
+    <p><strong>Section:</strong> {{ assignment.section.title }}</p>
+    <p><strong>Course:</strong> {{ course.name }}</p>
+    <p><strong>Due:</strong> {{ assignment.due_date }}</p>
+
+    <hr>
+
+    {# ================= ALREADY SUBMITTED ================= #}
+    {% if submission and submission.submitted_at %}
+        <div class="alert alert-success">
+            <strong>Submitted!</strong><br>
+            You have already submitted this assignment on
+            {{ submission.submitted_at|date:"M d, Y H:i" }}.
+        </div>
+
+        {% if submission.file %}
+            <p class="completed">
+                Submitted file:
+                <a href="{{ submission.file.url }}" target="_blank">
+                    {{ submission.file.name }}
+                </a>
+            </p>
+        {% endif %}
+
+        <a href="{% url 'classroom:student_home' %}" class="btn btn-primary">
+            Go to Dashboard
+        </a>
+
+    {# ================= NOT SUBMITTED ================= #}
+    {% else %}
+        <h4>Assignment Questions</h4>
+
+        {% if assignment.questions.all %}
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% for question in assignment.questions.all %}
+                    <div class="mb-3">
+                        <label for="answer_{{ question.id }}">
+                            <strong>Q{{ forloop.counter }}:</strong> {{ question.question_text }}
+                        </label>
+                        <textarea
+                            name="answer_{{ question.id }}"
+                            id="answer_{{ question.id }}"
+                            rows="3"
+                            class="form-control"
+                            {% if submission and submission.submitted_at %}readonly{% endif %}
+                        >{% if answers_map|dict_get:question.id %}{{ answers_map|dict_get:question.id }}{% endif %}</textarea>
+                    </div>
+                {% endfor %}
+
+                <!-- File upload -->
+                <div class="file-section mb-3">
+                    <label for="file"><strong>Upload File (optional):</strong></label>
+                    {% if submission and submission.file %}
+                        <p class="completed">
+                            {% if submission.submitted_at %}Submitted{% else %}Draft{% endif %} file:
+                            <a href="{{ submission.file.url }}" target="_blank">{{ submission.file.name }}</a>
+                        </p>
+                    {% endif %}
+                    <input type="file" name="file" class="form-control mt-1"
+                        {% if submission and submission.submitted_at %}disabled{% endif %}>
+                </div>
+
+                <!-- Submit button -->
+                {% if submission and submission.submitted_at %}
+                    <button type="button" class="btn btn-success" disabled>
+                        Already Submitted
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn btn-primary">
+                        Submit Assignment
+                    </button>
+                {% endif %}
+
+            </form>
+        {% else %}
+            <p>No questions for this assignment yet.</p>
+        {% endif %}
+
+
+
+        <a href="{% url 'classroom:student_course_content' course.id %}"
+           class="btn btn-secondary mt-3">
+            Back to Course
+        </a>
+    {% endif %}
+
+</div>
+{% endblock %}

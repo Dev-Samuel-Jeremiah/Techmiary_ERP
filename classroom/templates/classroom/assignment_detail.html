@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ assignment.title }} | Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f4f8; }
+        h1 { color: #1f3a5f; }
+        h2 { color: #2563eb; margin-top: 20px; }
+        .question { padding: 12px; background: #fff; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .add-btn { background: #2563eb; color: #fff; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 15px; }
+        .add-btn:hover { background: #1e40af; }
+    </style>
+</head>
+<body>
+
+<h1>{{ assignment.title }}</h1>
+<p>{{ assignment.description }}</p>
+<p><strong>Due:</strong> {{ assignment.due_date }}</p>
+
+<h2>Questions / Tasks</h2>
+{% for question in questions %}
+    <div class="question">
+        {{ question.question_text }}
+    </div>
+{% empty %}
+    <p>No questions yet.</p>
+{% endfor %}
+
+<a href="{% url 'classroom:add_assignment_question' assignment.id %}" class="add-btn">+ Add Question / Task</a>
+<a href="{% url 'classroom:teacher_course_detail' course_id=course.id %}" class="add-btn">Back to Course</a>
+
+</body>
+</html>
+
+

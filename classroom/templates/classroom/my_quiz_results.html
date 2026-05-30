@@ -1,0 +1,213 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
+    <title>My_Quiz Result</title>
+</head>
+<body>
+    
+
+<style>
+    body {
+        background: #f1f5f9;
+        font-family: 'Inter', Arial, sans-serif;
+    }
+
+    .results-container {
+        max-width: 900px;
+        margin: 50px auto;
+        padding: 10px;
+    }
+
+    .btn-back {
+        display: inline-block;
+        margin-bottom: 20px;
+        background: #ffffff;
+        color: #1e40af;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 10px 18px;
+        text-decoration: none;
+        border: 1px solid #2563eb;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: #2563eb;
+        color: #ffffff;
+    }
+
+    .results-title {
+        color: #1e3a8a;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    /* Quiz Card */
+    .quiz-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .quiz-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 18px 45px rgba(0,0,0,0.12);
+    }
+
+    .quiz-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .quiz-meta {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-bottom: 15px;
+    }
+
+    .quiz-score {
+        display: inline-block;
+        background: linear-gradient(135deg, #2563eb, #1e40af);
+        color: #ffffff;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    /* Answers */
+    .answers-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .answer-item {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 15px 18px;
+        margin-bottom: 15px;
+        border-left: 5px solid #e5e7eb;
+    }
+
+    .answer-item.correct {
+        border-left-color: #10b981;
+        background: #ecfdf5;
+    }
+
+    .answer-item.incorrect {
+        border-left-color: #ef4444;
+        background: #fef2f2;
+    }
+
+    .question-text {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 6px;
+    }
+
+    .user-answer {
+        font-size: 0.95rem;
+        color: #374151;
+    }
+
+    .correct-text {
+        color: #059669;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .incorrect-text {
+        color: #dc2626;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .correct-answer {
+        font-size: 0.9rem;
+        color: #065f46;
+        margin-top: 5px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        color: #64748b;
+    }
+</style>
+
+<div class="results-container">
+
+    <h1 class="results-title">My Quiz Results</h1>
+
+    {% if submissions %}
+        {% for sub in submissions %}
+            {# Back button for this quiz's course #}
+            <a href="{% url 'classroom:student_course_content' sub.quiz.section.course.id %}" class="btn-back">
+                ← Back to Course
+            </a>
+
+            <div class="quiz-card">
+                <div class="quiz-title">{{ sub.quiz.title }}</div>
+
+                <div class="quiz-meta">
+                    Submitted on {{ sub.submitted_at|date:"D, M d, Y H:i" }}
+                </div>
+
+                <div class="quiz-score">
+                    Score: {{ sub.score }} / {{ sub.total_questions }}
+                </div>
+
+                <ul class="answers-list">
+                    {% for ans in sub.answers.all %}
+                        <li class="answer-item {% if ans.selected_option == ans.question.correct_option %}correct{% else %}incorrect{% endif %}">
+                            <div class="question-text">
+                                Q: {{ ans.question.question_text }}
+                            </div>
+
+                            <div class="user-answer">
+                                Your Answer: {{ ans.selected_option }}
+
+                                {% if ans.selected_option == ans.question.correct_option %}
+                                    <span class="correct-text">✔ Correct</span>
+                                {% else %}
+                                    <span class="incorrect-text">✖ Incorrect</span>
+                                {% endif %}
+                            </div>
+
+                            {% if ans.selected_option != ans.question.correct_option %}
+                                <div class="correct-answer">
+                                    Correct Answer: {{ ans.question.correct_option }}
+                                </div>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <h3>No Quiz Attempts Yet</h3>
+            <p>You have not taken any quizzes yet. Once you do, your results will appear here.</p>
+        </div>
+    {% endif %}
+</div>
+
+
+</body>
+</html>

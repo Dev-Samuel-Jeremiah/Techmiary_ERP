@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Attendance – {{ live_class.title }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ink:#f2f0eb;--surface:#1b1b24;--surface2:#21212e;--surface3:#272736;
+  --rim:rgba(255,255,255,.06);--rim2:rgba(255,255,255,.1);--rim3:rgba(255,255,255,.16);
+  --champagne:#c9a96e;--champagne-lt:#e8c98a;--champagne-dim:rgba(201,169,110,.12);
+  --slate:rgba(255,255,255,.38);--slate2:rgba(255,255,255,.58);
+  --green:#35c58b;--green-dim:rgba(53,197,139,.12);--green-border:rgba(53,197,139,.24);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#14141b;color:var(--ink);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--rim2);padding:1rem 2rem;display:flex;align-items:center;gap:1rem}
+.topbar a{color:var(--champagne);text-decoration:none;font-size:.9rem}
+.topbar h1{font-size:1.1rem;font-weight:600}
+.container{max-width:720px;margin:2rem auto;padding:0 1.5rem}
+.info-card{background:var(--surface2);border:1px solid var(--rim2);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;gap:2rem;flex-wrap:wrap}
+.info-item label{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--slate);display:block;margin-bottom:.2rem}
+.info-item span{font-size:.95rem;font-weight:500}
+.stat-chip{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);border-radius:8px;padding:.3rem .75rem;font-size:.85rem;font-weight:600;display:inline-flex;align-items:center;gap:.4rem}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);padding:.6rem 1rem;text-align:left;border-bottom:1px solid var(--rim2)}
+tbody tr{border-bottom:1px solid var(--rim)}
+tbody tr:hover{background:var(--rim)}
+tbody td{padding:.75rem 1rem;font-size:.9rem}
+.empty{text-align:center;padding:3rem;color:var(--slate)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="{% url 'liveclass:teacher_live_classes' live_class.course.id %}"><i class="bi bi-arrow-left"></i> Live Classes</a>
+  <h1>Attendance</h1>
+</div>
+<div class="container">
+  <div class="info-card">
+    <div class="info-item">
+      <label>Class</label>
+      <span>{{ live_class.title }}</span>
+    </div>
+    <div class="info-item">
+      <label>Course</label>
+      <span>{{ live_class.course.name }}</span>
+    </div>
+    <div class="info-item">
+      <label>Date</label>
+      <span>{{ live_class.scheduled_at|date:"D, d M Y – H:i" }}</span>
+    </div>
+    <div class="info-item">
+      <label>Total Attended</label>
+      <span class="stat-chip"><i class="bi bi-people-fill"></i> {{ attendances.count }}</span>
+    </div>
+  </div>
+
+  {% if not attendances %}
+    <div class="empty"><i class="bi bi-person-x" style="font-size:2rem;display:block;margin-bottom:.5rem"></i> No attendance recorded.</div>
+  {% else %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Student</th>
+          <th>Joined At</th>
+          <th>Left At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for att in attendances %}
+        <tr>
+          <td style="color:var(--slate)">{{ forloop.counter }}</td>
+          <td>{{ att.student.get_full_name|default:att.student.username }}</td>
+          <td>{{ att.joined_at|time:"H:i" }}</td>
+          <td>{{ att.left_at|time:"H:i"|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</div>
+</body>
+</html>

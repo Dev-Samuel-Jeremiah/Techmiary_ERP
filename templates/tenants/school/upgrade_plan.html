@@ -1,0 +1,420 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choose a Plan | {{ tenant.name }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{
+      --navy:#050c1a;--panel:#0f1e38;--panel2:#0b1628;--border:rgba(255,255,255,.08);
+      --gold:#e8b84b;--gold-dim:rgba(232,184,75,.12);--gold-dark:#c8901a;
+      --green:#34d399;--blue:#4f8ef7;--red:#f87171;
+      --muted:rgba(255,255,255,.45);--text:#dde4f0;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--navy);color:var(--text);
+         min-height:100vh;padding:2.5rem 1.25rem;}
+    a{color:inherit;text-decoration:none;}
+
+    .page{max-width:1100px;margin:0 auto;}
+    .back{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.85rem;margin-bottom:2rem;}
+    .back:hover{color:#fff;}
+
+    /* Page header */
+    .page-header{text-align:center;margin-bottom:2.5rem;}
+    .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem;}
+    h1{font-size:2rem;font-weight:800;color:#fff;margin-bottom:.4rem;}
+    .subtitle{color:var(--muted);font-size:.92rem;}
+
+    /* ── Calculator card ─────────────────────── */
+    .calc-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;
+               padding:1.75rem;margin-bottom:2.5rem;}
+    .calc-title{font-size:.78rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+                color:var(--muted);margin-bottom:1.25rem;}
+    .calc-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:1rem;align-items:end;}
+    @media(max-width:700px){.calc-grid{grid-template-columns:1fr 1fr;}}
+    @media(max-width:480px){.calc-grid{grid-template-columns:1fr;}}
+
+    .form-group label{display:block;font-size:.76rem;font-weight:600;color:var(--muted);
+                      margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.4px;}
+    .form-control{width:100%;padding:.7rem 1rem;background:rgba(255,255,255,.05);
+                  border:1px solid var(--border);border-radius:8px;color:#fff;
+                  font-size:.9rem;font-family:inherit;outline:none;transition:border-color .15s;}
+    .form-control:focus{border-color:rgba(232,184,75,.5);}
+    .form-control option{background:#0f1e38;}
+
+    .calc-result{background:rgba(232,184,75,.07);border:1px solid rgba(232,184,75,.2);
+                 border-radius:10px;padding:1rem 1.5rem;margin-top:1.25rem;
+                 display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;}
+    .calc-amount{font-size:2rem;font-weight:800;color:var(--gold);}
+    .calc-breakdown{font-size:.82rem;color:var(--muted);}
+    .calc-period{font-size:.75rem;background:rgba(232,184,75,.12);border:1px solid rgba(232,184,75,.2);
+                 color:var(--gold);padding:.2rem .6rem;border-radius:99px;font-weight:700;margin-top:.25rem;display:inline-block;}
+
+    /* ── Plans grid ───────────────────────────── */
+    .plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;margin-bottom:2rem;}
+
+    .plan-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;
+               padding:1.75rem;display:flex;flex-direction:column;position:relative;
+               transition:transform .2s,border-color .2s;cursor:pointer;}
+    .plan-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.15);}
+    .plan-card.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 8px 40px rgba(232,184,75,.1);}
+    .plan-card.popular{border-color:rgba(232,184,75,.4);}
+
+    .popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+                   background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#000;
+                   font-size:.68rem;font-weight:800;padding:.25rem .85rem;border-radius:99px;
+                   white-space:nowrap;letter-spacing:.5px;}
+
+    .plan-name{font-size:1rem;font-weight:800;color:#fff;margin-bottom:.2rem;}
+    .plan-rate{font-size:1.5rem;font-weight:800;color:var(--gold);margin-bottom:.1rem;}
+    .plan-rate-label{font-size:.75rem;color:var(--muted);margin-bottom:.75rem;}
+    .plan-computed{font-size:.82rem;color:var(--green);font-weight:600;min-height:1.2rem;margin-bottom:1rem;}
+
+    .features{flex:1;margin-bottom:1.25rem;}
+    .feature-row{display:flex;align-items:center;gap:.5rem;padding:.28rem 0;font-size:.8rem;
+                 border-bottom:1px solid rgba(255,255,255,.04);}
+    .feature-row:last-child{border:none;}
+    .fi{width:16px;flex-shrink:0;font-size:.8rem;}
+    .fi.on{color:var(--green);}
+    .fi.off{color:rgba(255,255,255,.15);}
+    .feature-row.off{color:var(--muted);}
+
+    .limits{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.9rem;}
+    .limit-pill{background:rgba(255,255,255,.04);border:1px solid var(--border);
+                border-radius:6px;padding:.2rem .55rem;font-size:.72rem;color:var(--muted);}
+    .limit-pill strong{color:#fff;}
+
+    .btn-select{width:100%;padding:.8rem;border-radius:9px;font-size:.9rem;font-weight:700;
+                border:none;cursor:pointer;font-family:inherit;transition:all .15s;margin-bottom:.5rem;}
+    .btn-default{background:rgba(255,255,255,.07);color:#fff;border:1px solid var(--border);}
+    .btn-default:hover{background:rgba(255,255,255,.12);}
+    .btn-popular{background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#000;
+                 box-shadow:0 4px 20px rgba(232,184,75,.2);}
+    .btn-popular:hover{transform:translateY(-1px);}
+    .trial-note{text-align:center;font-size:.72rem;color:var(--muted);}
+    .current-pill{display:inline-block;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.25);
+                  color:var(--blue);border-radius:99px;padding:.15rem .55rem;font-size:.7rem;font-weight:700;margin-bottom:.5rem;}
+
+    /* ── Payment modal ────────────────────────── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;
+                   align-items:center;justify-content:center;padding:1rem;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--panel2);border:1px solid var(--border);border-radius:18px;
+           width:100%;max-width:480px;padding:2rem;}
+    .modal-title{font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:1.5rem;}
+    .summary-box{background:rgba(255,255,255,.03);border:1px solid var(--border);
+                 border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;}
+    .summary-row{display:flex;justify-content:space-between;padding:.4rem 0;font-size:.875rem;
+                 border-bottom:1px solid rgba(255,255,255,.04);}
+    .summary-row:last-child{border:none;padding-top:.75rem;margin-top:.25rem;}
+    .summary-row.total .dl{font-weight:700;color:#fff;}
+    .summary-row.total .dv{font-size:1.3rem;font-weight:800;color:var(--gold);}
+    .dl{color:var(--muted);}
+    .dv{color:#fff;font-weight:600;}
+    .modal-actions{display:flex;gap:.75rem;}
+    .btn-pay{flex:1;padding:.85rem;border-radius:10px;font-size:.95rem;font-weight:700;
+             background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#000;
+             border:none;cursor:pointer;font-family:inherit;transition:all .15s;}
+    .btn-pay:hover{transform:translateY(-1px);}
+    .btn-cancel{padding:.85rem 1.25rem;border-radius:10px;font-size:.9rem;font-weight:700;
+                background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border);
+                cursor:pointer;font-family:inherit;}
+
+    /* ── Info note ────────────────────────────── */
+    .info-note{max-width:600px;margin:0 auto 2rem;text-align:center;color:var(--muted);font-size:.82rem;line-height:1.7;}
+    .info-note strong{color:#fff;}
+  </style>
+</head>
+<body>
+<div class="page">
+  <a href="/subscription/" class="back"><i class="bi bi-arrow-left"></i> Back to subscription</a>
+
+  <div class="page-header">
+    <div class="eyebrow">Billing &amp; Plans</div>
+    <h1>Choose a plan for {{ tenant.name }}</h1>
+    <p class="subtitle">Pricing is per student. Pay per term or per full session.</p>
+  </div>
+
+  <!-- ── CALCULATOR ─────────────────────────────────── -->
+  <div class="calc-card">
+    <div class="calc-title"><i class="bi bi-calculator"></i> &nbsp;Payment Calculator</div>
+    <div class="calc-grid">
+      <div class="form-group">
+        <label>Number of Students</label>
+        <input type="number" id="calcStudents" class="form-control"
+               value="{{ student_count }}" min="1" placeholder="e.g. 130"
+               oninput="recalcAll()">
+      </div>
+      <div class="form-group">
+        <label>Plan</label>
+        <select id="calcPlan" class="form-control" onchange="recalcAll()">
+          {% for plan in plans %}
+          <option value="{{ plan.code }}"
+                  data-term="{{ plan.price_per_student_term }}"
+                  data-terms="{{ plan.terms_per_session }}"
+                  {% if tenant.plan and tenant.plan.code == plan.code %}selected{% endif %}>
+            {{ plan.name }} — ₦{{ plan.price_per_student_term|floatformat:0 }}/student/term
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Billing Period</label>
+        <select id="calcBilling" class="form-control" onchange="recalcAll()">
+          <option value="TERM">Per Term (~90 days)</option>
+          <option value="SESSION">Per Session (3 Terms)</option>
+        </select>
+      </div>
+    </div>
+    <div class="calc-result">
+      <div>
+        <div class="calc-amount" id="calcAmount">₦0</div>
+        <div class="calc-breakdown" id="calcBreakdown">Enter student count above</div>
+        <span class="calc-period" id="calcPeriod">—</span>
+      </div>
+      <button class="btn-pay" style="min-width:180px;" onclick="openModal()">
+        <i class="bi bi-credit-card-fill"></i> &nbsp;Pay This Amount
+      </button>
+    </div>
+  </div>
+
+  <!-- ── PLANS ──────────────────────────────────────── -->
+  <div class="plans-grid">
+    {% for plan in plans %}
+    <div class="plan-card {% if plan.highlight_label %}popular{% endif %}"
+         id="card-{{ plan.code }}" onclick="selectPlan('{{ plan.code }}')">
+
+      {% if plan.highlight_label %}
+        <div class="popular-badge">{{ plan.highlight_label }}</div>
+      {% endif %}
+
+      {% if tenant.plan and tenant.plan.id == plan.id %}
+        <div class="current-pill">Current Plan</div>
+      {% endif %}
+
+      <div class="plan-name">{{ plan.name }}</div>
+      <div class="plan-rate">₦{{ plan.price_per_student_term|floatformat:0 }}</div>
+      <div class="plan-rate-label">per student · per term</div>
+      <div class="plan-computed" id="computed-{{ plan.code }}">
+        — Enter student count above —
+      </div>
+
+      <div class="limits">
+        <div class="limit-pill">
+          <strong>{% if plan.max_students == 0 %}∞{% else %}{{ plan.max_students }}{% endif %}</strong> Students
+        </div>
+        <div class="limit-pill">
+          <strong>{% if plan.max_staff == 0 %}∞{% else %}{{ plan.max_staff }}{% endif %}</strong> Staff
+        </div>
+        <div class="limit-pill">
+          <strong>{% if plan.max_classes == 0 %}∞{% else %}{{ plan.max_classes }}{% endif %}</strong> Classes
+        </div>
+      </div>
+
+      <div class="features">
+        {% for f in plan.features_list %}
+        <div class="feature-row {% if not f.included %}off{% endif %}">
+          <i class="bi {{ f.icon }} fi {% if f.included %}on{% else %}off{% endif %}"></i>
+          {{ f.label }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" onclick="selectPlan('{{ plan.code }}')"
+              class="btn-select {% if plan.highlight_label %}btn-popular{% else %}btn-default{% endif %}">
+        Select {{ plan.name }}
+      </button>
+      <div class="trial-note">14-day free trial · Cancel anytime</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="info-note">
+    <strong>How pricing works:</strong> You pay based on the number of active students in your school.
+    <br>Per term covers ~90 days. Per session covers a full academic session (3 terms, ~270 days).
+    <br>Annual savings: paying per session is cheaper than paying term-by-term.
+  </div>
+</div>
+
+<!-- ── PAYMENT MODAL ──────────────────────────────── -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-title"><i class="bi bi-lock-fill" style="color:var(--gold);"></i> &nbsp;Confirm Payment</div>
+
+    <div class="summary-box">
+      <div class="summary-row">
+        <span class="dl">School</span>
+        <span class="dv">{{ tenant.name }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="dl">Plan</span>
+        <span class="dv" id="modal-plan">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="dl">Students</span>
+        <span class="dv" id="modal-students">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="dl">Rate</span>
+        <span class="dv" id="modal-rate">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="dl">Period</span>
+        <span class="dv" id="modal-period">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="dl">Breakdown</span>
+        <span class="dv" id="modal-breakdown">—</span>
+      </div>
+      <div class="summary-row total">
+        <span class="dl">Total Amount</span>
+        <span class="dv" id="modal-total">₦0</span>
+      </div>
+    </div>
+
+    <form method="POST" action="/subscription/checkout/" id="payForm">
+      {% csrf_token %}
+      <input type="hidden" name="plan_code"     id="f-plan-code">
+      <input type="hidden" name="billing_cycle" id="f-billing">
+      <input type="hidden" name="student_count" id="f-students">
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn-pay">
+          <i class="bi bi-credit-card-fill"></i> Pay Now
+        </button>
+      </div>
+    </form>
+    <p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:.75rem;">
+      <i class="bi bi-shield-lock-fill"></i> Secured by Paystack · SSL encrypted
+    </p>
+  </div>
+</div>
+
+<script>
+var planData = {
+  {% for plan in plans %}
+  "{{ plan.code }}": {
+    name:  "{{ plan.name }}",
+    rate:  {{ plan.price_per_student_term|floatformat:0 }},
+    terms: {{ plan.terms_per_session }},
+    popular: {% if plan.highlight_label %}true{% else %}false{% endif %}
+  }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+};
+
+var currentPlan    = "{{ tenant.plan.code|default:plans.0.code }}";
+var currentBilling = "TERM";
+var currentAmount  = 0;
+
+function recalcAll() {
+  var students = parseInt(document.getElementById('calcStudents').value) || 0;
+  var planCode = document.getElementById('calcPlan').value;
+  var billing  = document.getElementById('calcBilling').value;
+  var plan     = planData[planCode];
+
+  currentPlan    = planCode;
+  currentBilling = billing;
+
+  if (!plan || students <= 0) {
+    document.getElementById('calcAmount').textContent    = '₦0';
+    document.getElementById('calcBreakdown').textContent = 'Enter student count above';
+    document.getElementById('calcPeriod').textContent    = '—';
+    // clear all computed labels
+    Object.keys(planData).forEach(function(code) {
+      var el = document.getElementById('computed-' + code);
+      if (el) el.textContent = '— Enter student count above —';
+    });
+    currentAmount = 0;
+    return;
+  }
+
+  // Update all plan cards with computed cost
+  Object.keys(planData).forEach(function(code) {
+    var p = planData[code];
+    var cost = billing === 'SESSION'
+      ? p.rate * students * p.terms
+      : p.rate * students;
+    var el = document.getElementById('computed-' + code);
+    if (el) {
+      el.textContent = billing === 'SESSION'
+        ? '₦' + fmt(cost) + ' / session'
+        : '₦' + fmt(cost) + ' / term';
+    }
+  });
+
+  // Main calc card
+  var amount = billing === 'SESSION'
+    ? plan.rate * students * plan.terms
+    : plan.rate * students;
+
+  currentAmount = amount;
+
+  document.getElementById('calcAmount').textContent = '₦' + fmt(amount);
+  document.getElementById('calcBreakdown').textContent = billing === 'SESSION'
+    ? students + ' students × ₦' + fmt(plan.rate) + ' × ' + plan.terms + ' terms'
+    : students + ' students × ₦' + fmt(plan.rate) + ' per term';
+  document.getElementById('calcPeriod').textContent = billing === 'SESSION'
+    ? '1 Session (' + plan.terms + ' Terms · ~270 days)'
+    : '1 Term (~90 days)';
+
+  // Highlight selected plan card
+  Object.keys(planData).forEach(function(c) {
+    var card = document.getElementById('card-' + c);
+    if (card) card.classList.toggle('selected', c === planCode);
+  });
+}
+
+function selectPlan(code) {
+  document.getElementById('calcPlan').value = code;
+  currentPlan = code;
+  recalcAll();
+  document.getElementById('card-' + code).scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function openModal() {
+  var students = parseInt(document.getElementById('calcStudents').value) || 0;
+  var plan     = planData[currentPlan];
+  var billing  = currentBilling;
+
+  if (!plan || students <= 0 || currentAmount <= 0) {
+    alert('Please enter a valid student count first.');
+    return;
+  }
+
+  document.getElementById('modal-plan').textContent      = plan.name;
+  document.getElementById('modal-students').textContent  = students + ' students';
+  document.getElementById('modal-rate').textContent      = '₦' + fmt(plan.rate) + ' per student per term';
+  document.getElementById('modal-period').textContent    = billing === 'SESSION'
+    ? '1 Session (' + plan.terms + ' terms)' : '1 Term';
+  document.getElementById('modal-breakdown').textContent = billing === 'SESSION'
+    ? students + ' × ₦' + fmt(plan.rate) + ' × ' + plan.terms + ' terms'
+    : students + ' × ₦' + fmt(plan.rate);
+  document.getElementById('modal-total').textContent     = '₦' + fmt(currentAmount);
+
+  document.getElementById('f-plan-code').value = currentPlan;
+  document.getElementById('f-billing').value   = billing;
+  document.getElementById('f-students').value  = students;
+
+  document.getElementById('payModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('payModal').classList.remove('open');
+}
+
+function fmt(n) {
+  return Math.round(n).toLocaleString('en-NG');
+}
+
+// Initialise
+window.addEventListener('DOMContentLoaded', function() {
+  {% if tenant.plan %}
+  document.getElementById('calcPlan').value = '{{ tenant.plan.code }}';
+  {% endif %}
+  recalcAll();
+});
+</script>
+</body>
+</html>

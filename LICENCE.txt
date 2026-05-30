@@ -1,0 +1,77 @@
+PROPRIETARY SOFTWARE LICENCE
+=============================
+
+Techmiary Institute of Technology — Institutional ERP
+Copyright © 2025–2026 Techmiary. All Rights Reserved.
+
+IMPORTANT — READ CAREFULLY BEFORE USING THIS SOFTWARE.
+
+This software and all associated files, documentation, and resources
+("the Software") are the exclusive intellectual property of
+White Diamonds Academy ("the Owners").
+
+GRANT OF LICENCE
+----------------
+The Owners grant the institution "Techmiary Institute of Technology"
+State, Nigeria, a non-exclusive, non-transferable licence to:
+  • Install and operate the Software on school-owned servers.
+  • Make backup copies for disaster recovery purposes only.
+
+RESTRICTIONS
+------------
+Unless you have received prior written consent from the Owners, you may NOT:
+  1. Copy, reproduce, distribute, or publish the Software or any portion
+     of it, in any form or by any means.
+  2. Modify, adapt, translate, reverse-engineer, decompile, or disassemble
+     the Software.
+  3. Sell, sublicence, lease, rent, or otherwise transfer the Software or
+     any rights therein to any third party.
+  4. Use the Software for any purpose other than the internal administration
+     of White Diamonds Academy.
+  5. Remove or alter any proprietary notices, labels, or marks on the Software.
+
+INTELLECTUAL PROPERTY
+---------------------
+All title, ownership rights, and intellectual property rights in and to
+the Software (including but not limited to all source code, object code,
+documentation, images, and data structures) remain the exclusive property
+of the Owners. This Licence does not convey to you any title or ownership
+in the Software.
+
+WARRANTY DISCLAIMER
+-------------------
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. THE OWNERS DO NOT
+WARRANT THAT THE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE.
+
+LIMITATION OF LIABILITY
+-----------------------
+IN NO EVENT SHALL THE OWNERS BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+LOSS OF DATA, LOSS OF REVENUE, OR BUSINESS INTERRUPTION) ARISING OUT OF
+THE USE OR INABILITY TO USE THE SOFTWARE, EVEN IF THE OWNERS HAVE BEEN
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+TERMINATION
+-----------
+This Licence is effective until terminated. It will terminate automatically
+without notice if you fail to comply with any term of this Licence. Upon
+termination, you must destroy all copies of the Software in your possession.
+
+GOVERNING LAW
+-------------
+This Licence shall be governed by and construed in accordance with the
+laws of the Federal Republic of Nigeria, without regard to its conflict
+of law provisions. Any disputes shall be resolved in the courts of
+Plateau State, Nigeria.
+
+CONTACT
+-------
+
+White Diamonds Academy
+Zaramangada, Rayfield Road, Jos, Plateau State, Nigeria
+Website: https://titmiary.edu.ng
+
+---
+Last updated: April 2026

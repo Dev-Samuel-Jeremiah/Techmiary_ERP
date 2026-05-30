@@ -1,0 +1,249 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription | {{ tenant.name }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root{--navy:#070d1e;--panel:#111c38;--border:rgba(255,255,255,.07);
+          --gold:#d4a843;--gold-light:#f0c96a;--gold-dim:rgba(212,168,67,.12);
+          --muted:rgba(255,255,255,.42);--text:#e8eaf0;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"DM Sans",sans-serif;background:var(--navy);color:var(--text);min-height:100vh;padding:2.5rem 2rem;}
+    .page{max-width:900px;margin:0 auto;}
+    .page-header{margin-bottom:2.5rem;}
+    .eyebrow{font-size:.73rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem;}
+    h1{font-family:"Syne",sans-serif;font-size:1.8rem;font-weight:800;color:#fff;}
+
+    /* Status card */
+    .status-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:2rem;margin-bottom:2rem;}
+    .sc-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;}
+    .sc-plan{font-family:"Syne",sans-serif;font-size:1.4rem;font-weight:800;color:#fff;}
+    .sc-sub{font-size:.85rem;color:var(--muted);margin-top:.2rem;}
+    .badge{display:inline-block;padding:.3rem .85rem;border-radius:50px;font-size:.75rem;font-weight:700;letter-spacing:.5px;}
+    .badge-active{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#4ade80;}
+    .badge-trial{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:#60a5fa;}
+    .badge-suspended{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#f87171;}
+
+    .sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;}
+    .sc-stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:1rem;}
+    .sc-stat-label{font-size:.72rem;color:var(--muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.5px;}
+    .sc-stat-value{font-size:1.1rem;font-weight:700;color:#fff;}
+
+    /* Features grid */
+    .section-title{font-family:"Syne",sans-serif;font-size:1rem;font-weight:700;color:#fff;
+                   margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.6rem;margin-bottom:2rem;}
+    .feature-item{display:flex;align-items:center;gap:.6rem;padding:.65rem .9rem;
+                  background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:.82rem;}
+    .feature-item.on{border-color:rgba(34,197,94,.2);background:rgba(34,197,94,.04);color:#e8eaf0;}
+    .feature-item.off{opacity:.45;}
+    .fi-icon{font-size:1rem;flex-shrink:0;}
+    .fi-icon.on{color:#4ade80;}
+    .fi-icon.off{color:#6b7280;}
+
+    /* Payments */
+    .payments-table{width:100%;border-collapse:collapse;font-size:.85rem;}
+    .payments-table th{text-align:left;padding:.6rem .8rem;color:var(--muted);
+                       font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;
+                       border-bottom:1px solid var(--border);}
+    .payments-table td{padding:.7rem .8rem;border-bottom:1px solid rgba(255,255,255,.04);}
+    .payments-table tr:hover td{background:rgba(255,255,255,.02);}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;gap:.45rem;padding:.7rem 1.4rem;
+         border-radius:10px;font-size:.88rem;font-weight:600;text-decoration:none;
+         border:none;cursor:pointer;font-family:inherit;}
+    .btn-gold{background:linear-gradient(135deg,var(--gold),#aa7215);color:#fff;
+              box-shadow:0 4px 16px rgba(212,168,67,.25);}
+    .btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(212,168,67,.35);}
+    .btn-ghost{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text);}
+    .btn-ghost:hover{background:rgba(255,255,255,.09);}
+
+    /* Trial bar */
+    .trial-bar{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);
+               border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;
+               gap:.75rem;margin-bottom:2rem;font-size:.88rem;}
+    .trial-bar i{color:#60a5fa;font-size:1.1rem;flex-shrink:0;}
+    .trial-bar strong{color:#fff;}
+    .trial-bar a{color:var(--gold);font-weight:600;margin-left:auto;white-space:nowrap;}
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-header">
+    <div class="eyebrow">Account & Billing</div>
+    <h1>Subscription</h1>
+  </div>
+
+  {% if is_on_trial %}
+  <div class="trial-bar">
+    <i class="ph ph-timer"></i>
+    <span>You are on a <strong>free trial</strong> — <strong>{{ trial_days }}</strong> day{{ trial_days|pluralize }} remaining.</span>
+    <a href="/subscription/upgrade/">Choose a plan →</a>
+  </div>
+  {% endif %}
+
+  <!-- Current Plan -->
+  <div class="status-card">
+    <div class="sc-top">
+      <div>
+        <div class="sc-plan">{{ tenant.plan.name|default:"No Plan" }}</div>
+        <div class="sc-sub">{{ tenant.get_billing_cycle_display }} billing &middot; {{ tenant.portal_url }}</div>
+      </div>
+      <div>
+        {% if tenant.status == 'ACTIVE' %}
+          <span class="badge badge-active">Active</span>
+        {% elif tenant.status == 'TRIAL' %}
+          <span class="badge badge-trial">Free Trial</span>
+        {% else %}
+          <span class="badge badge-suspended">{{ tenant.get_status_display }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="sc-grid">
+      {% if current_sub %}
+      <div class="sc-stat">
+        <div class="sc-stat-label">Period Ends</div>
+        <div class="sc-stat-value">{{ current_sub.ends_at|date:"d M Y" }}</div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-label">Days Remaining</div>
+        <div class="sc-stat-value">{{ current_sub.days_remaining }}</div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-label">Students Billed</div>
+        <div class="sc-stat-value">{{ current_sub.student_count|default:"—" }}</div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-label">Amount Paid</div>
+        <div class="sc-stat-value">₦{{ current_sub.amount|floatformat:0 }}</div>
+      </div>
+      {% endif %}
+      {% if tenant.plan %}
+      <div class="sc-stat">
+        <div class="sc-stat-label">Rate per Student</div>
+        <div class="sc-stat-value">₦{{ tenant.plan.price_per_student_term|floatformat:0 }}/term</div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-label">Student Limit</div>
+        <div class="sc-stat-value">{% if tenant.plan.max_students == 0 %}Unlimited{% else %}{{ tenant.plan.max_students }}{% endif %}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Per-student cost calculator inline -->
+  {% if tenant.plan %}
+  <div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.18);
+              border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:2rem;">
+    <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+                color:rgba(212,168,67,.7);margin-bottom:.9rem;">
+      <i class="bi bi-calculator"></i> &nbsp;Renewal Cost Calculator
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div>
+        <label style="font-size:.75rem;color:rgba(255,255,255,.4);display:block;margin-bottom:.3rem;">Students</label>
+        <input type="number" id="ss-students" value="{{ student_count }}" min="1"
+               style="width:110px;padding:.55rem .8rem;background:rgba(255,255,255,.07);
+                      border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#fff;
+                      font-size:.9rem;font-family:inherit;outline:none;"
+               oninput="ssCalc()">
+      </div>
+      <div>
+        <label style="font-size:.75rem;color:rgba(255,255,255,.4);display:block;margin-bottom:.3rem;">Period</label>
+        <select id="ss-period"
+                style="padding:.55rem .8rem;background:rgba(255,255,255,.07);
+                       border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#fff;
+                       font-size:.88rem;font-family:inherit;outline:none;"
+                onchange="ssCalc()">
+          <option value="TERM">Per Term (~90 days)</option>
+          <option value="SESSION">Per Session (3 Terms)</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:180px;">
+        <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:.3rem;">Total</div>
+        <div id="ss-total" style="font-size:1.5rem;font-weight:800;color:#d4a843;">₦0</div>
+        <div id="ss-breakdown" style="font-size:.75rem;color:rgba(255,255,255,.35);"></div>
+      </div>
+      <div>
+        <a href="/subscription/upgrade/" class="btn btn-gold" style="white-space:nowrap;">
+          <i class="bi bi-credit-card-fill"></i> Pay / Renew
+        </a>
+      </div>
+    </div>
+  </div>
+  <script>
+  var SS_RATE  = {{ tenant.plan.price_per_student_term|floatformat:0 }};
+  var SS_TERMS = {{ tenant.plan.terms_per_session|default:3 }};
+  function ssCalc() {
+    var s = parseInt(document.getElementById('ss-students').value) || 0;
+    var p = document.getElementById('ss-period').value;
+    var total = p === 'SESSION' ? SS_RATE * s * SS_TERMS : SS_RATE * s;
+    document.getElementById('ss-total').textContent = '₦' + total.toLocaleString('en-NG');
+    document.getElementById('ss-breakdown').textContent = p === 'SESSION'
+      ? s + ' × ₦' + SS_RATE.toLocaleString('en-NG') + ' × ' + SS_TERMS + ' terms'
+      : s + ' × ₦' + SS_RATE.toLocaleString('en-NG') + ' per term';
+  }
+  ssCalc();
+  </script>
+  {% endif %}
+
+  <!-- Features -->
+  <div class="section-title">Plan Features</div>
+  <div class="features-grid">
+    {% if tenant.plan %}
+      {% for f in tenant.plan.features_list %}
+      <div class="feature-item {% if f.included %}on{% else %}off{% endif %}">
+        <i class="ph {% if f.included %}ph-check-circle fi-icon on{% else %}ph-x-circle fi-icon off{% endif %}"></i>
+        {{ f.label }}
+      </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <!-- Actions -->
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:2.5rem;">
+    <a href="/subscription/upgrade/" class="btn btn-gold">
+      <i class="ph ph-rocket-launch"></i> Upgrade / Change Plan
+    </a>
+    <a href="/subscription/invoices/" class="btn btn-ghost">
+      <i class="ph ph-receipt"></i> View Invoices
+    </a>
+  </div>
+
+  <!-- Recent payments -->
+  {% if payments %}
+  <div class="section-title">Recent Payments</div>
+  <table class="payments-table">
+    <thead>
+      <tr>
+        <th>Date</th><th>Plan</th><th>Amount</th><th>Reference</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td>{{ p.created_at|date:"d M Y" }}</td>
+        <td>{{ p.plan.name }}</td>
+        <td>₦{{ p.amount|floatformat:0 }}</td>
+        <td style="font-family:monospace;font-size:.78rem;color:rgba(255,255,255,.5);">{{ p.paystack_ref }}</td>
+        <td>
+          {% if p.status == 'SUCCESS' %}<span style="color:#4ade80;">✓ Paid</span>
+          {% elif p.status == 'PENDING' %}<span style="color:#f59e0b;">Pending</span>
+          {% else %}<span style="color:#f87171;">{{ p.status }}</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+</div>
+</body>
+</html>

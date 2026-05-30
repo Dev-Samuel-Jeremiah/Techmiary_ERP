@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Classes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ink:#f2f0eb;--surface:#1b1b24;--surface2:#21212e;--surface3:#272736;
+  --rim:rgba(255,255,255,.06);--rim2:rgba(255,255,255,.1);--rim3:rgba(255,255,255,.16);
+  --champagne:#c9a96e;--champagne-lt:#e8c98a;--champagne-dim:rgba(201,169,110,.12);
+  --slate:rgba(255,255,255,.38);--slate2:rgba(255,255,255,.58);
+  --green:#35c58b;--green-dim:rgba(53,197,139,.12);--green-border:rgba(53,197,139,.24);
+  --blue:#5ea2ff;--blue-dim:rgba(94,162,255,.12);--blue-border:rgba(94,162,255,.24);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#14141b;color:var(--ink);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--rim2);padding:1rem 2rem;display:flex;align-items:center;gap:1rem}
+.topbar a{color:var(--champagne);text-decoration:none;font-size:.9rem}
+.topbar h1{font-size:1.1rem;font-weight:600}
+.container{max-width:860px;margin:2rem auto;padding:0 1.5rem}
+.section-title{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--slate);font-weight:600;margin-bottom:.75rem}
+.card{background:var(--surface2);border:1px solid var(--rim2);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:.85rem;display:flex;align-items:center;gap:1rem;transition:.2s}
+.card:hover{border-color:var(--rim3);background:var(--surface3)}
+.card-icon{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.card-icon.live{background:var(--green-dim);color:var(--green)}
+.card-icon.scheduled{background:var(--blue-dim);color:var(--blue)}
+.card-body{flex:1}
+.card-title{font-size:1rem;font-weight:600}
+.card-meta{color:var(--slate2);font-size:.82rem;margin-top:.25rem;display:flex;gap:.75rem;flex-wrap:wrap}
+.card-actions{flex-shrink:0}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:5px;font-size:.72rem;font-weight:600}
+.badge.live{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);animation:pulse 2s infinite}
+.badge.scheduled{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.1rem;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;text-decoration:none;border:none;transition:.2s}
+.btn-join{background:var(--green);color:#0d1a13}
+.btn-join:hover{filter:brightness(1.1)}
+.btn-wait{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
+.empty{text-align:center;padding:4rem 2rem;color:var(--slate)}
+.empty i{font-size:3rem;display:block;margin-bottom:1rem;color:var(--rim3)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="{% url 'classroom:student_courses' %}"><i class="bi bi-arrow-left"></i> My Courses</a>
+  <h1>Live Classes</h1>
+</div>
+<div class="container">
+  {% if not live_classes %}
+    <div class="empty">
+      <i class="bi bi-camera-video-off"></i>
+      <p>No upcoming live classes right now.</p>
+    </div>
+  {% else %}
+    {% regroup live_classes by status as grouped %}
+    {% for group in grouped %}
+      <div class="section-title" style="margin-top:1.5rem">
+        {% if group.grouper == 'live' %}🔴 Happening Now{% else %}📅 Upcoming{% endif %}
+      </div>
+      {% for lc in group.list %}
+      <div class="card">
+        <div class="card-icon {{ lc.status }}">
+          {% if lc.status == 'live' %}<i class="bi bi-broadcast"></i>
+          {% else %}<i class="bi bi-calendar-event"></i>{% endif %}
+        </div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+            <span class="card-title">{{ lc.title }}</span>
+            <span class="badge {{ lc.status }}">{{ lc.get_status_display }}</span>
+          </div>
+          <div class="card-meta">
+            <span><i class="bi bi-book"></i> {{ lc.course.name }}</span>
+            <span><i class="bi bi-person"></i> {{ lc.teacher.get_full_name|default:lc.teacher.username }}</span>
+            <span><i class="bi bi-clock"></i> {{ lc.scheduled_at|date:"D, d M – H:i" }}</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          {% if lc.status == 'live' %}
+            <a href="{% url 'liveclass:enter_live_class' lc.room_id %}" class="btn btn-join">
+              <i class="bi bi-camera-video-fill"></i> Join Now
+            </a>
+          {% else %}
+            <span class="btn btn-wait"><i class="bi bi-clock"></i> Waiting</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% endfor %}
+  {% endif %}
+</div>
+</body>
+</html>

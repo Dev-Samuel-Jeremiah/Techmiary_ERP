@@ -1,0 +1,119 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Email & SMS Configuration Test{% endblock %}
+{% block content %}
+<style>
+.card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:18px;}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.88rem;}
+.lbl{color:#64748b;font-weight:500;} .val{font-weight:700;color:#1e293b;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:9px;font-size:.84rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;text-decoration:none;}
+.btn-g{background:#16a34a;color:#fff;} .btn-b{background:#2563eb;color:#fff;} .btn-ghost{background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0;}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.fg label{font-size:.77rem;font-weight:700;color:#475569;}
+.fg input{padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.87rem;font-family:inherit;}
+</style>
+
+{% if messages %}{% for m in messages %}
+<div style="padding:12px 16px;border-radius:9px;margin-bottom:12px;font-weight:600;font-size:.86rem;
+  {% if m.tags == 'success' %}background:#dcfce7;color:#166534;border-left:4px solid #16a34a;
+  {% elif m.tags == 'error' %}background:#fee2e2;color:#991b1b;border-left:4px solid #dc2626;
+  {% else %}background:#dbeafe;color:#1e40af;border-left:4px solid #2563eb;{% endif %}">
+  {{ m }}
+</div>
+{% endfor %}{% endif %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="font-size:1.3rem;font-weight:900;color:#1e293b;margin:0;">Email & SMS Configuration</h2>
+    <p style="color:#64748b;font-size:.82rem;margin-top:3px;">Test your messaging setup before sending to parents</p>
+  </div>
+  <a href="{% url 'communications:dashboard' %}" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Dashboard</a>
+</div>
+
+<!-- SMTP Status -->
+<div class="card">
+  <div style="font-weight:800;font-size:.95rem;margin-bottom:14px;">
+    <i class="bi bi-envelope-fill" style="color:{% if conn_status.ok %}#16a34a{% else %}#dc2626{% endif %};"></i>
+    SMTP Connection Status:
+    {% if conn_status.ok %}
+    <span style="color:#16a34a;">✓ Connected</span>
+    {% else %}
+    <span style="color:#dc2626;">✗ Not Connected</span>
+    {% endif %}
+  </div>
+
+  {% if not conn_status.ok %}
+  <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:16px;margin-bottom:16px;">
+    <div style="font-weight:700;color:#991b1b;margin-bottom:8px;"><i class="bi bi-exclamation-triangle-fill"></i> Connection Error</div>
+    <code style="font-size:.82rem;color:#7f1d1d;word-break:break-all;">{{ conn_status.detail }}</code>
+    <div style="margin-top:12px;font-size:.83rem;color:#991b1b;">
+      <strong>How to fix:</strong>
+      <ul style="margin:6px 0 0;padding-left:18px;line-height:1.7;">
+        <li>Check that <strong>port 587</strong> is open on your server's outbound firewall</li>
+        <li>Run: <code>telnet smtp.gmail.com 587</code> — if it hangs, the port is blocked</li>
+        <li>Ask your hosting provider to allow outbound SMTP on port 587</li>
+        <li><strong>Temporary workaround:</strong> add this to <code>settings.py</code> to log emails to terminal instead:<br>
+          <code>EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'</code>
+        </li>
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="row"><span class="lbl">Email Host</span><span class="val">{{ email_host }}</span></div>
+  <div class="row"><span class="lbl">Port</span><span class="val">{{ email_port }}</span></div>
+  <div class="row"><span class="lbl">Username (Gmail)</span><span class="val">{{ email_user }}</span></div>
+  <div class="row"><span class="lbl">From Address</span><span class="val">{{ from_email }}</span></div>
+  <div class="row" style="border:none;"><span class="lbl">Backend</span>
+    <span class="val" style="font-size:.78rem;font-family:monospace;">{{ backend }}</span>
+  </div>
+</div>
+
+<!-- SMS Status -->
+<div class="card">
+  <div style="font-weight:800;font-size:.95rem;margin-bottom:14px;">
+    <i class="bi bi-phone-fill" style="color:{% if termii_key == 'SET' %}#16a34a{% else %}#d97706{% endif %};"></i>
+    SMS (Termii) Status:
+    {% if termii_key == 'SET' %}
+    <span style="color:#16a34a;">✓ API Key Configured</span>
+    {% else %}
+    <span style="color:#d97706;">⚠ No API Key — SMS will log to console</span>
+    {% endif %}
+  </div>
+  {% if termii_key != 'SET' %}
+  <div style="background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:14px;font-size:.83rem;color:#92400e;">
+    <strong>To enable real SMS sending:</strong>
+    <ol style="margin:6px 0 0;padding-left:18px;line-height:1.8;">
+      <li>Register at <strong>termii.com</strong> (free Nigerian SMS gateway)</li>
+      <li>Get your API key from the dashboard</li>
+      <li>Add to your server environment: <code>export TERMII_API_KEY=your_key_here</code></li>
+      <li>Restart gunicorn: <code>sudo systemctl restart gunicorn</code></li>
+    </ol>
+    Without a key, all SMS will print to the gunicorn log file (no real SMS sent, no errors).
+  </div>
+  {% endif %}
+</div>
+
+<!-- Send Test Email -->
+<div class="card" style="max-width:500px;">
+  <div style="font-weight:800;font-size:.95rem;margin-bottom:14px;"><i class="bi bi-send-fill" style="color:#2563eb;"></i> Send Test Email</div>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="fg">
+      <label>Send test to this email address</label>
+      <input type="email" name="to_email" required placeholder="admin@example.com"
+             value="{% if result %}{{ result.to }}{% endif %}">
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button type="submit" class="btn btn-b" {% if not conn_status.ok %}disabled title="Fix SMTP connection first"{% endif %}>
+        <i class="bi bi-send"></i> Send Test Email
+      </button>
+      <button type="submit" class="btn btn-ghost" formnovalidate>
+        <i class="bi bi-wifi"></i> Test Connection Only
+      </button>
+    </div>
+    {% if not conn_status.ok %}
+    <div style="margin-top:8px;font-size:.78rem;color:#dc2626;">Fix SMTP connection before sending.</div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

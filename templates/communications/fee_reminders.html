@@ -1,0 +1,112 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Fee Reminders{% endblock %}
+{% block content %}
+<style>
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:18px;}
+.tbl{width:100%;border-collapse:collapse;font-size:.83rem;}
+.tbl th{background:#f8fafc;padding:8px 12px;text-align:left;font-weight:700;color:#475569;font-size:.71rem;text-transform:uppercase;}
+.tbl td{padding:9px 12px;border-bottom:1px solid #f1f5f9;}
+.tbl tr:hover td{background:#fafafa;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:9px;font-size:.83rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;text-decoration:none;}
+.btn-g{background:#16a34a;color:#fff;} .btn-r{background:#dc2626;color:#fff;} .btn-ghost{background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:.77rem;font-weight:700;color:#475569;}
+.fg select,.fg textarea{padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.87rem;font-family:inherit;}
+</style>
+
+{% if messages %}{% for m in messages %}
+<div style="padding:10px 14px;border-radius:9px;margin-bottom:10px;font-weight:600;font-size:.86rem;
+  {% if m.tags == 'success' %}background:#dcfce7;color:#166534;{% elif m.tags == 'error' %}background:#fee2e2;color:#991b1b;{% else %}background:#dbeafe;color:#1e40af;{% endif %}">{{ m }}</div>
+{% endfor %}{% endif %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="font-size:1.3rem;font-weight:900;color:#1e293b;margin:0;">Fee Payment Reminders</h2>
+    <p style="color:#64748b;font-size:.82rem;margin-top:3px;">
+      <strong style="color:#dc2626;">{{ total_debtors }}</strong> students with outstanding fees
+    </p>
+  </div>
+  <a href="{% url 'communications:dashboard' %}" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Dashboard</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+<div class="card">
+  <div style="font-weight:800;font-size:.93rem;margin-bottom:14px;">Send Reminders</div>
+  <form method="POST">
+    {% csrf_token %}
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="fg">
+        <label>Channel</label>
+        <select name="channel">
+          <option value="BOTH" selected>Email + SMS</option>
+          <option value="EMAIL">Email only</option>
+          <option value="SMS">SMS only</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Custom Message (optional — leave blank for default)</label>
+        <textarea name="custom_message" rows="5"
+          placeholder="Leave blank to use the default fee reminder template.&#10;&#10;Or enter a custom message using placeholders:&#10;Dear {{parent_name}}, your child {{student_name}} owes {{outstanding_fee}}..."></textarea>
+      </div>
+      <div style="background:#fef2f2;border-radius:8px;padding:12px;font-size:.82rem;color:#991b1b;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        This will send messages to <strong>{{ total_debtors }}</strong> parents.
+        Review the list below before sending.
+      </div>
+      <button type="submit" class="btn btn-r" style="justify-content:center;"
+        onclick="return confirm('Send fee reminders to {{ total_debtors }} parents now?')">
+        <i class="bi bi-send-fill"></i> Send Fee Reminders Now
+      </button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div style="font-weight:800;font-size:.93rem;margin-bottom:10px;">Default Email Template Preview</div>
+  <div style="font-size:.79rem;color:#475569;line-height:1.6;background:#f8fafc;border-radius:8px;padding:12px;">
+    <strong>Subject:</strong> School Fee Reminder — Action Required<br><br>
+    Dear <em>{{parent_name}}</em>,<br><br>
+    This is a friendly reminder that the school fee for <strong>{{student_name}}</strong> ({{class_name}}) has an outstanding balance.<br><br>
+    <strong style="color:#dc2626;">Outstanding: {{outstanding_fee}}</strong><br><br>
+    Please make payment at your earliest convenience.<br><br>
+    Regards,<br>Techmiary Institute of Technology
+  </div>
+  <div style="margin-top:10px;font-size:.78rem;color:#94a3b8;">SMS version is a shorter version of the above.</div>
+</div>
+</div>
+
+<!-- Debtors List -->
+<div class="card">
+  <div style="font-weight:800;font-size:.93rem;margin-bottom:12px;">📋 Recipients Preview ({{ total_debtors }} students)</div>
+  <div style="overflow-x:auto;">
+  <table class="tbl">
+    <thead><tr><th>#</th><th>Student</th><th>Class</th><th>Parent</th><th>Email</th><th>Phone</th><th>Outstanding</th></tr></thead>
+    <tbody>
+      {% for d in debtors %}
+      <tr>
+        <td style="color:#94a3b8;font-size:.78rem;">{{ forloop.counter }}</td>
+        <td><strong>{{ d.student.full_name }}</strong></td>
+        <td>{{ d.student.class_assigned.name|default:"—" }}</td>
+        <td>{{ d.student.parent_name|default:"—" }}</td>
+        <td style="font-size:.78rem;">
+          {% if d.student.parent_email %}
+          <span style="color:#16a34a;">{{ d.student.parent_email }}</span>
+          {% else %}<span style="color:#dc2626;">No email</span>{% endif %}
+        </td>
+        <td style="font-size:.78rem;">
+          {% if d.student.parent_phone %}
+          <span style="color:#16a34a;">{{ d.student.parent_phone }}</span>
+          {% else %}<span style="color:#dc2626;">No phone</span>{% endif %}
+        </td>
+        <td style="font-weight:800;color:#dc2626;">₦{{ d.balance|floatformat:2 }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8;">
+        <i class="bi bi-check-circle" style="color:#16a34a;font-size:1.5rem;display:block;margin-bottom:6px;"></i>
+        All fees are paid! No reminders needed.
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

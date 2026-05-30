@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Suspended | {{ tenant.name }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root{--navy:#070d1e;--red:#ef4444;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"DM Sans",sans-serif;background:var(--navy);min-height:100vh;
+         display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;}
+    .icon{font-size:3rem;color:var(--red);margin-bottom:1.25rem;}
+    h1{font-family:"Syne",sans-serif;font-size:1.6rem;color:#fff;margin-bottom:.6rem;}
+    p{color:rgba(255,255,255,.5);max-width:380px;line-height:1.6;margin-bottom:1.5rem;}
+    a{color:#d4a843;font-weight:600;text-decoration:none;}
+  </style>
+</head>
+<body>
+  <div>
+    <div class="icon"><i class="ph ph-warning-octagon"></i></div>
+    <h1>Account Suspended</h1>
+    <p>
+      <strong style="color:#fff;">{{ tenant.name }}</strong>'s account has been suspended,
+      likely due to a missed payment. Please settle your outstanding balance to restore access.
+    </p>
+    <p>Contact <a href="mailto:billing@titmiary.edu.ng">billing@titmiary.edu.ng</a> for help.</p>
+  </div>
+</body>
+</html>

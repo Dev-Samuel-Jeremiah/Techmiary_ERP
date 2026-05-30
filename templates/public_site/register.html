@@ -1,0 +1,1117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Your School | Techmiary ERP</title>
+  <meta name="description" content="Register your school on Techmiary ERP — the all-in-one school management platform for Nigerian institutions.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    /* ═══════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════ */
+    :root {
+      --ink:          #0e0e14;
+      --surface:      #1b1b24;
+      --surface2:     #21212e;
+      --surface3:     #272736;
+      --rim:          rgba(255,255,255,.06);
+      --rim2:         rgba(255,255,255,.10);
+      --rim3:         rgba(255,255,255,.16);
+
+      --champagne:        #c9a96e;
+      --champagne-lt:     #e8c98a;
+      --champagne-dim:    rgba(201,169,110,.12);
+      --champagne-border: rgba(201,169,110,.28);
+
+      --slate:   rgba(255,255,255,.38);
+      --slate2:  rgba(255,255,255,.58);
+      --white:   #f2f0eb;
+
+      --green:         #4ade80;
+      --green-dim:     rgba(74,222,128,.12);
+      --green-border:  rgba(74,222,128,.25);
+
+      --red:           #f87171;
+      --red-dim:       rgba(248,113,113,.12);
+      --red-border:    rgba(248,113,113,.25);
+
+      --blue:          #60a5fa;
+      --blue-dim:      rgba(96,165,250,.12);
+      --blue-border:   rgba(96,165,250,.25);
+
+      --purple:        #c084fc;
+      --purple-dim:    rgba(192,132,252,.12);
+      --purple-border: rgba(192,132,252,.25);
+
+      --teal:          #2dd4bf;
+      --teal-dim:      rgba(45,212,191,.12);
+      --teal-border:   rgba(45,212,191,.25);
+
+      --amber:         #fbbf24;
+      --amber-dim:     rgba(251,191,36,.12);
+      --amber-border:  rgba(251,191,36,.25);
+    }
+
+    /* ═══════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--ink);
+      color: var(--white);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    a { text-decoration: none; color: inherit; }
+    select option { background: var(--surface2); color: var(--white); }
+
+    /* ═══════════════════════════════════════════
+       KEYFRAMES
+    ═══════════════════════════════════════════ */
+    @keyframes riseUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes shimmer {
+      from { background-position: -200% center; }
+      to   { background-position:  200% center; }
+    }
+    @keyframes pulse-ring {
+      0%,100% { opacity: .6; transform: scale(1); }
+      50%      { opacity: 1; transform: scale(1.06); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ═══════════════════════════════════════════
+       PAGE LAYOUT
+    ═══════════════════════════════════════════ */
+    .page-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ═══════════════════════════════════════════
+       LEFT SIDEBAR
+    ═══════════════════════════════════════════ */
+    .sidebar {
+      flex: 0 0 400px;
+      background: linear-gradient(160deg, #0b0b10, #131320, #0d0d18);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2.5rem;
+    }
+    .sidebar-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(201,169,110,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,169,110,.03) 1px, transparent 1px);
+      background-size: 56px 56px;
+    }
+    .sidebar-glow {
+      position: absolute; top: -120px; left: -80px;
+      width: 460px; height: 460px; border-radius: 50%; pointer-events: none;
+      background: radial-gradient(circle, rgba(201,169,110,.09) 0%, transparent 65%);
+    }
+    .sidebar-glow-2 {
+      position: absolute; bottom: -80px; right: -60px;
+      width: 300px; height: 300px; border-radius: 50%; pointer-events: none;
+      background: radial-gradient(circle, rgba(96,165,250,.06) 0%, transparent 65%);
+    }
+
+    /* Sidebar logo */
+    .sb-logo {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: .85rem;
+      margin-bottom: 3rem;
+    }
+    .sb-logo img {
+      height: 36px; width: auto; display: block;
+    }
+    .sb-logo-fallback {
+      height: 36px; width: auto; display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem; font-weight: 700; color: var(--champagne);
+      line-height: 36px;
+    }
+
+    /* Sidebar headline */
+    .sb-content { position: relative; z-index: 1; flex: 1; }
+    .sb-eyebrow {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-size: .68rem; font-weight: 600;
+      letter-spacing: 1.8px; text-transform: uppercase;
+      color: var(--champagne); margin-bottom: .75rem;
+    }
+    .sb-eyebrow::before {
+      content: "";
+      width: 18px; height: 1px;
+      background: var(--champagne); flex-shrink: 0;
+    }
+    .sb-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem; font-weight: 700;
+      color: var(--white); line-height: 1.12;
+      margin-bottom: .75rem; letter-spacing: -.3px;
+    }
+    .sb-title em {
+      font-style: italic; color: var(--champagne);
+      background: linear-gradient(90deg, var(--champagne), var(--champagne-lt), var(--champagne));
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: shimmer 4s linear infinite;
+    }
+    .sb-desc {
+      font-size: .88rem; color: var(--slate2);
+      line-height: 1.7; margin-bottom: 2rem;
+    }
+
+    /* Perks */
+    .sb-perks { display: flex; flex-direction: column; gap: .7rem; }
+    .sb-perk {
+      display: flex; align-items: flex-start; gap: .75rem;
+      font-size: .83rem; color: var(--slate2);
+      padding: .65rem .8rem;
+      background: rgba(255,255,255,.025);
+      border: 1px solid var(--rim);
+      border-radius: 10px;
+    }
+    .sb-perk-icon {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: var(--champagne-dim);
+      border: 1px solid var(--champagne-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; color: var(--champagne);
+      flex-shrink: 0; margin-top: .05rem;
+    }
+    .sb-perk strong { color: var(--white); font-weight: 600; }
+
+    /* Sidebar footer */
+    .sb-footer {
+      position: relative; z-index: 1;
+      font-size: .72rem; color: rgba(255,255,255,.2);
+      margin-top: 2rem; padding-top: 1.25rem;
+      border-top: 1px solid var(--rim);
+    }
+    .sb-footer a { color: rgba(201,169,110,.4); }
+    .sb-footer a:hover { color: var(--champagne); }
+
+    /* ═══════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════ */
+    .main {
+      flex: 1;
+      background: var(--ink);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .reg-wrap {
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 2.5rem 4rem;
+      animation: riseUp .4s ease both;
+    }
+
+    /* ═══════════════════════════════════════════
+       PAGE HEADER
+    ═══════════════════════════════════════════ */
+    .page-header {
+      padding: 3rem 0 2rem;
+      border-bottom: 1px solid var(--rim);
+      position: relative;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 1.5rem; flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .page-header::after {
+      content: "";
+      position: absolute;
+      bottom: -1px; left: 0;
+      width: 80px; height: 1px;
+      background: var(--champagne);
+    }
+    .page-header-left { flex: 1; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: .6rem;
+      font-size: .7rem; font-weight: 600;
+      letter-spacing: 1.8px; text-transform: uppercase;
+      color: var(--champagne); margin-bottom: .7rem;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 22px; height: 1px;
+      background: var(--champagne); flex-shrink: 0;
+    }
+    .page-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.9rem, 3.5vw, 2.6rem);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -.4px;
+    }
+    .page-header h1 em {
+      font-style: italic;
+      color: var(--champagne);
+    }
+    .page-header-desc {
+      color: var(--slate2);
+      font-size: .9rem;
+      line-height: 1.7;
+      margin-top: .5rem;
+    }
+    .context-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--champagne-dim);
+      border: 1px solid var(--champagne-border);
+      border-radius: 50px;
+      padding: .4rem 1rem;
+      font-size: .76rem; font-weight: 600;
+      color: var(--champagne-lt);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       STEP INDICATOR
+    ═══════════════════════════════════════════ */
+    .steps-bar {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--rim);
+      border-radius: 14px;
+      padding: 1.1rem 1.5rem;
+      position: relative; overflow: hidden;
+    }
+    .steps-bar::before {
+      content: "";
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--rim3), transparent);
+    }
+    .step-item {
+      display: flex; align-items: center; gap: .6rem;
+      flex: 1; position: relative;
+    }
+    .step-item:not(:last-child)::after {
+      content: "";
+      position: absolute; right: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 1px; height: 24px;
+      background: var(--rim2);
+    }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; font-weight: 700;
+      border: 1px solid var(--rim2);
+      color: var(--slate);
+      background: var(--surface2);
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+    .step-num.active {
+      background: var(--champagne-dim);
+      border-color: var(--champagne-border);
+      color: var(--champagne);
+    }
+    .step-num.done {
+      background: var(--green-dim);
+      border-color: var(--green-border);
+      color: var(--green);
+    }
+    .step-info { min-width: 0; }
+    .step-name {
+      font-size: .75rem; font-weight: 600;
+      color: var(--slate);
+      transition: color .2s;
+      white-space: nowrap;
+    }
+    .step-name.active { color: var(--white); }
+    .step-name.done { color: var(--green); }
+    .step-sub {
+      font-size: .67rem; color: var(--slate);
+      display: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       PANEL
+    ═══════════════════════════════════════════ */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--rim);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+    .panel::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--rim3), transparent);
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--rim);
+    }
+    .panel-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; flex-shrink: 0;
+    }
+    .pi-champagne { background: var(--champagne-dim); color: var(--champagne); }
+    .pi-blue      { background: var(--blue-dim);      color: var(--blue); }
+    .pi-green     { background: var(--green-dim);     color: var(--green); }
+    .pi-purple    { background: var(--purple-dim);    color: var(--purple); }
+    .pi-teal      { background: var(--teal-dim);      color: var(--teal); }
+
+    .panel-header h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: .92rem; font-weight: 600;
+      color: var(--white);
+    }
+    .panel-body { padding: 1.5rem; }
+
+    /* ═══════════════════════════════════════════
+       FORM ELEMENTS
+    ═══════════════════════════════════════════ */
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1.1rem; }
+
+    .form-label {
+      display: block;
+      font-size: .73rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .4px;
+      color: var(--slate2);
+      margin-bottom: .45rem;
+    }
+    .form-label .req { color: var(--champagne); }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: .75rem .95rem;
+      background: var(--surface2);
+      border: 1px solid var(--rim2);
+      border-radius: 10px;
+      font-size: .9rem;
+      font-family: 'Outfit', sans-serif;
+      color: var(--white);
+      outline: none;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .form-input::placeholder,
+    .form-textarea::placeholder { color: var(--slate); }
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      border-color: var(--champagne);
+      box-shadow: 0 0 0 3px rgba(201,169,110,.10);
+    }
+    .form-textarea { resize: vertical; min-height: 88px; }
+
+    /* Subdomain */
+    .subdomain-wrap { position: relative; }
+    .subdomain-wrap .form-input { padding-right: 190px; }
+    .subdomain-suffix {
+      position: absolute; right: .95rem; top: 50%; transform: translateY(-50%);
+      font-size: .76rem; color: var(--slate); pointer-events: none; white-space: nowrap;
+    }
+    .subdomain-status {
+      font-size: .74rem; margin-top: .35rem;
+      display: flex; align-items: center; gap: .35rem;
+      min-height: 18px;
+    }
+    .subdomain-status.ok  { color: var(--green); }
+    .subdomain-status.err { color: var(--red); }
+    .subdomain-status.checking { color: var(--slate2); }
+
+    /* Field error */
+    .field-error {
+      font-size: .74rem; color: var(--red);
+      margin-top: .35rem;
+      display: flex; align-items: center; gap: .35rem;
+    }
+
+    /* Global error banner */
+    .error-banner {
+      background: var(--red-dim);
+      border: 1px solid var(--red-border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex; align-items: flex-start; gap: .75rem;
+      animation: riseUp .3s ease both;
+    }
+    .error-banner i { color: var(--red); font-size: 1.1rem; flex-shrink: 0; margin-top: .1rem; }
+    .error-banner-title { font-size: .88rem; font-weight: 700; color: var(--red); margin-bottom: .15rem; }
+    .error-banner-body  { font-size: .82rem; color: rgba(248,113,113,.8); line-height: 1.5; }
+
+    /* Info banner */
+    .info-banner {
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
+      border-radius: 10px;
+      padding: .9rem 1rem;
+      font-size: .82rem; color: var(--green);
+      display: flex; align-items: flex-start; gap: .6rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+    .info-banner i { flex-shrink: 0; margin-top: .1rem; }
+
+    /* ═══════════════════════════════════════════
+       PLAN CARDS
+    ═══════════════════════════════════════════ */
+    .plan-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: .85rem;
+      margin-bottom: 1.25rem;
+    }
+    .plan-option {
+      border: 1px solid var(--rim2);
+      border-radius: 12px;
+      padding: 1.1rem;
+      cursor: pointer;
+      background: var(--surface2);
+      transition: all .18s;
+      position: relative; overflow: hidden;
+    }
+    .plan-option::before {
+      content: "";
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--rim3), transparent);
+    }
+    .plan-option:hover { border-color: var(--champagne-border); }
+    .plan-option.selected {
+      border-color: var(--champagne);
+      background: var(--champagne-dim);
+    }
+    .plan-option.selected::before {
+      background: linear-gradient(90deg, transparent, var(--champagne), transparent);
+    }
+    .plan-option input[type=radio] { display: none; }
+    .po-check {
+      position: absolute; top: .7rem; right: .7rem;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--champagne-dim);
+      border: 1px solid var(--champagne-border);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .18s;
+    }
+    .po-check i { font-size: .6rem; color: var(--champagne); }
+    .plan-option.selected .po-check { opacity: 1; }
+    .po-name { font-size: .9rem; font-weight: 700; color: var(--white); margin-bottom: .25rem; }
+    .po-price { font-size: .78rem; color: var(--champagne); font-weight: 600; }
+    .po-desc  { font-size: .72rem; color: var(--slate2); margin-top: .35rem; line-height: 1.45; }
+
+    /* ═══════════════════════════════════════════
+       CALCULATOR BOX
+    ═══════════════════════════════════════════ */
+    .calc-box {
+      background: var(--surface2);
+      border: 1px solid var(--rim2);
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      position: relative; overflow: hidden;
+    }
+    .calc-box::before {
+      content: "";
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--champagne-border), transparent);
+    }
+    .calc-label {
+      font-size: .7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .9px;
+      color: var(--slate); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .calc-label i { color: var(--champagne); }
+    .calc-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; margin-bottom: 1rem; }
+
+    .calc-result-box {
+      display: none;
+      background: rgba(0,0,0,.25);
+      border: 1px solid var(--rim2);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      margin-bottom: .5rem;
+    }
+    .calc-result-breakdown { font-size: .76rem; color: var(--slate); margin-bottom: .25rem; }
+    .calc-result-total {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem; font-weight: 700; color: var(--champagne);
+      line-height: 1;
+    }
+    .calc-result-period { font-size: .73rem; color: var(--slate); margin-top: .2rem; }
+    .calc-prompt { text-align: center; font-size: .82rem; color: var(--slate); padding: .5rem 0; }
+
+    /* ═══════════════════════════════════════════
+       FORM NAVIGATION BUTTONS
+    ═══════════════════════════════════════════ */
+    .form-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: .75rem; margin-top: 1.5rem;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .82rem 1.6rem;
+      border-radius: 10px;
+      font-size: .9rem; font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      border: none; cursor: pointer;
+      transition: all .16s;
+    }
+    .btn-next {
+      background: linear-gradient(135deg, var(--champagne), #a07830);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(201,169,110,.22);
+    }
+    .btn-next:hover { transform: translateY(-1px); box-shadow: 0 7px 24px rgba(201,169,110,.32); }
+    .btn-back {
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--rim2);
+      color: var(--slate2);
+    }
+    .btn-back:hover { color: var(--white); border-color: var(--rim3); }
+    .btn-submit {
+      background: linear-gradient(135deg, var(--green), #166534);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(74,222,128,.18);
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 7px 22px rgba(74,222,128,.28); }
+
+    .terms-note {
+      font-size: .72rem; color: var(--slate);
+      text-align: center; margin-top: 1rem;
+    }
+    .terms-note a { color: rgba(201,169,110,.5); }
+    .terms-note a:hover { color: var(--champagne); }
+
+    /* ═══════════════════════════════════════════
+       PANEL ANIMATIONS
+    ═══════════════════════════════════════════ */
+    .panel:nth-child(1) { animation: riseUp .45s .04s ease both; }
+    .panel:nth-child(2) { animation: riseUp .45s .10s ease both; }
+    .panel:nth-child(3) { animation: riseUp .45s .16s ease both; }
+    .steps-bar          { animation: riseUp .45s .02s ease both; }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .reg-wrap { padding: 1.5rem 1.25rem 3rem; }
+    }
+    @media (max-width: 520px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .plan-options { grid-template-columns: 1fr; }
+      .calc-fields { grid-template-columns: 1fr; }
+      .page-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-shell">
+
+  <!-- ════════════════════ SIDEBAR ════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-grid"></div>
+    <div class="sidebar-glow"></div>
+    <div class="sidebar-glow-2"></div>
+
+    <!-- Logo -->
+    <div class="sb-logo">
+      <img src="{% static 'images/techmiary_logo_gold.png' %}" alt="Techmiary ERP" height="100">
+    </div>
+
+    <!-- Content -->
+    <div class="sb-content">
+      <div class="sb-eyebrow">School Registration</div>
+      <h2 class="sb-title">Get your school<br>portal <em>live today</em></h2>
+      <p class="sb-desc">
+        Join schools across Nigeria managing every operation from one fully integrated cloud platform.
+      </p>
+      <div class="sb-perks">
+        <div class="sb-perk">
+          <div class="sb-perk-icon"><i class="bi bi-clock-history"></i></div>
+          <div><strong>14-day free trial</strong> — no card needed to start</div>
+        </div>
+        <div class="sb-perk">
+          <div class="sb-perk-icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
+          <div><strong>Portal live within 24 hrs</strong> of approval</div>
+        </div>
+        <div class="sb-perk">
+          <div class="sb-perk-icon"><i class="bi bi-headset"></i></div>
+          <div><strong>Onboarding support</strong> included for every school</div>
+        </div>
+        <div class="sb-perk">
+          <div class="sb-perk-icon"><i class="bi bi-shield-lock-fill"></i></div>
+          <div><strong>Your data is isolated</strong> — private subdomain per school</div>
+        </div>
+        <div class="sb-perk">
+          <div class="sb-perk-icon"><i class="bi bi-currency-exchange"></i></div>
+          <div><strong>NGN billing</strong> via Paystack — no forex surprises</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-footer">
+      &copy; {% now "Y" %} Techmiary &middot;
+      <a href="mailto:support@titmiary.edu.ng">support@titmiary.edu.ng</a>
+    </div>
+  </aside>
+
+  <!-- ════════════════════ MAIN ════════════════════ -->
+  <main class="main">
+    <div class="reg-wrap">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="eyebrow">New Registration</div>
+          <h1>Register Your <em>School</em></h1>
+          <p class="page-header-desc">Fill in your school details to get started with a free 14-day trial.</p>
+        </div>
+        <div class="context-badge">
+          <i class="bi bi-shield-check"></i>
+          Free 14-Day Trial
+        </div>
+      </div>
+
+      <!-- Step bar -->
+      <div class="steps-bar" id="steps-bar">
+        <div class="step-item">
+          <div class="step-num active" id="dot-1"><i class="bi bi-check2" style="display:none;"></i><span id="dot-1-num">1</span></div>
+          <div class="step-info">
+            <div class="step-name active" id="sname-1">School Info</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num" id="dot-2"><i class="bi bi-check2" style="display:none;"></i><span id="dot-2-num">2</span></div>
+          <div class="step-info">
+            <div class="step-name" id="sname-2">Contact</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num" id="dot-3"><i class="bi bi-check2" style="display:none;"></i><span id="dot-3-num">3</span></div>
+          <div class="step-info">
+            <div class="step-name" id="sname-3">Plan &amp; Submit</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global errors -->
+      {% if errors %}
+      <div class="error-banner">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+          <div class="error-banner-title">Please fix the errors below</div>
+          <div class="error-banner-body">Check all steps for highlighted fields and correct them before submitting.</div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if errors.global_error %}
+      <div class="error-banner">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+          <div class="error-banner-title">Registration Failed</div>
+          <div class="error-banner-body">{{ errors.global_error }}</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <form method="POST" id="regForm" novalidate>
+        {% csrf_token %}
+
+        <!-- ══════ STEP 1: School Info ══════ -->
+        <div class="form-section active" id="step-1">
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-icon pi-champagne"><i class="bi bi-building-fill"></i></div>
+              <h3>School Information</h3>
+            </div>
+            <div class="panel-body">
+
+              <div class="form-group">
+                <label class="form-label">School Name <span class="req">*</span></label>
+                <input type="text" name="school_name" class="form-input"
+                       value="{{ form_data.school_name|default:'' }}"
+                       placeholder="e.g. Sunshine Academy" required>
+                {% if errors.school_name %}
+                <div class="field-error"><i class="bi bi-exclamation-circle-fill"></i>{{ errors.school_name }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">School Type <span class="req">*</span></label>
+                  <select name="school_type" class="form-select">
+                    {% for val, label in school_types %}
+                    <option value="{{ val }}" {% if form_data.school_type == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">State <span class="req">*</span></label>
+                  <select name="state" class="form-select">
+                    <option value="">— Select state —</option>
+                    {% for s in states %}
+                    <option value="{{ s }}" {% if form_data.state == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Your Subdomain <span class="req">*</span></label>
+                <div class="subdomain-wrap">
+                  <input type="text" name="subdomain" id="subdomainInput" class="form-input"
+                         value="{{ form_data.subdomain|default:'' }}"
+                         placeholder="sunshine" maxlength="50"
+                         oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')">
+                  <span class="subdomain-suffix">.titmiary.edu.ng</span>
+                </div>
+                <div class="subdomain-status" id="subdomainStatus"></div>
+                {% if errors.subdomain %}
+                <div class="field-error"><i class="bi bi-exclamation-circle-fill"></i>{{ errors.subdomain }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Approximate Number of Students</label>
+                <input type="number" name="student_count" class="form-input"
+                       value="{{ form_data.student_count|default:'' }}"
+                       placeholder="e.g. 300" min="0">
+              </div>
+
+            </div>
+          </div>
+
+          <div class="form-nav">
+            <span></span>
+            <button type="button" class="btn btn-next" onclick="goStep(2)">
+              Next — Contact Info <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ══════ STEP 2: Contact Info ══════ -->
+        <div class="form-section" id="step-2">
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-icon pi-blue"><i class="bi bi-person-fill"></i></div>
+              <h3>Contact Information</h3>
+            </div>
+            <div class="panel-body">
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Contact Name <span class="req">*</span></label>
+                  <input type="text" name="contact_name" class="form-input"
+                         value="{{ form_data.contact_name|default:'' }}"
+                         placeholder="Full name">
+                  {% if errors.contact_name %}
+                  <div class="field-error"><i class="bi bi-exclamation-circle-fill"></i>{{ errors.contact_name }}</div>
+                  {% endif %}
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Phone <span class="req">*</span></label>
+                  <input type="tel" name="contact_phone" class="form-input"
+                         value="{{ form_data.contact_phone|default:'' }}"
+                         placeholder="+234 800 000 0000">
+                  {% if errors.contact_phone %}
+                  <div class="field-error"><i class="bi bi-exclamation-circle-fill"></i>{{ errors.contact_phone }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Email Address <span class="req">*</span></label>
+                <input type="email" name="contact_email" class="form-input"
+                       value="{{ form_data.contact_email|default:'' }}"
+                       placeholder="admin@yourschool.edu.ng">
+                {% if errors.contact_email %}
+                <div class="field-error"><i class="bi bi-exclamation-circle-fill"></i>{{ errors.contact_email }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">School Address</label>
+                <textarea name="school_address" class="form-textarea"
+                          placeholder="Street, Town, LGA">{{ form_data.school_address|default:'' }}</textarea>
+              </div>
+
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Anything else you'd like us to know?</label>
+                <textarea name="message" class="form-textarea"
+                          placeholder="e.g. preferred setup timeline, specific modules needed, questions…">{{ form_data.message|default:'' }}</textarea>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="form-nav">
+            <button type="button" class="btn btn-back" onclick="goStep(1)">
+              <i class="bi bi-arrow-left"></i> Back
+            </button>
+            <button type="button" class="btn btn-next" onclick="goStep(3)">
+              Next — Choose Plan <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ══════ STEP 3: Plan & Submit ══════ -->
+        <div class="form-section" id="step-3">
+
+          <!-- Plan picker -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-icon pi-teal"><i class="bi bi-tag-fill"></i></div>
+              <h3>Choose Your Plan</h3>
+            </div>
+            <div class="panel-body">
+
+              <div class="plan-options" id="planOptions">
+                {% for plan in plans %}
+                <label class="plan-option {% if selected_plan_code == plan.code or forloop.first and not selected_plan_code %}selected{% endif %}"
+                       id="po-{{ plan.code }}" onclick="selectPlan('{{ plan.code }}')">
+                  <div class="po-check"><i class="bi bi-check2"></i></div>
+                  <input type="radio" name="plan_code" value="{{ plan.code }}"
+                         {% if selected_plan_code == plan.code or forloop.first and not selected_plan_code %}checked{% endif %}>
+                  <div class="po-name">{{ plan.name }}</div>
+                  <div class="po-price">₦{{ plan.price_per_student_term|floatformat:0 }} / student / term</div>
+                  <div class="po-desc">{{ plan.description|truncatewords:10 }}</div>
+                </label>
+                {% endfor %}
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Calculator -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-icon pi-champagne"><i class="bi bi-calculator-fill"></i></div>
+              <h3>Cost Calculator</h3>
+            </div>
+            <div class="panel-body">
+
+              <div class="calc-fields">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Number of Students</label>
+                  <input type="number" id="reg-students" name="student_count"
+                         class="form-input" placeholder="e.g. 130" min="1"
+                         oninput="regCalc()">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Billing Period</label>
+                  <select id="reg-billing" name="desired_billing" class="form-select" onchange="regCalc()">
+                    <option value="TERM">Per Term (~90 days)</option>
+                    <option value="SESSION">Per Session (3 Terms)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="reg-cost-box" class="calc-result-box">
+                <div class="calc-result-breakdown" id="reg-breakdown">—</div>
+                <div class="calc-result-total" id="reg-total">₦0</div>
+                <div class="calc-result-period" id="reg-period-label">—</div>
+              </div>
+              <div class="calc-prompt" id="reg-prompt">
+                Enter your student count above to see the total cost
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Info notice -->
+          <div class="info-banner">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>After submitting, your school will be reviewed and approved within 24 hours. You will then be directed to complete payment to activate your portal.</span>
+          </div>
+
+          <div class="form-nav">
+            <button type="button" class="btn btn-back" onclick="goStep(2)">
+              <i class="bi bi-arrow-left"></i> Back
+            </button>
+            <button type="submit" class="btn btn-submit" id="reg-submit-btn">
+              <i class="bi bi-send-fill"></i> Submit &amp; Proceed to Payment
+            </button>
+          </div>
+
+          <div class="terms-note">
+            By submitting, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+          </div>
+
+          <a href="{% url 'public_site:register_done' %}" style="display:none;"></a>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+</div><!-- /page-shell -->
+
+<script>
+// ── Step navigation ──────────────────────────────────────
+const totalSteps  = 3;
+const stepLabels  = ['School Info', 'Contact', 'Plan & Submit'];
+let   currentStep = 1;
+
+function goStep(n) {
+  // Deactivate old
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  var oldDot  = document.getElementById('dot-' + currentStep);
+  var oldName = document.getElementById('sname-' + currentStep);
+  oldDot.classList.remove('active');
+  oldDot.classList.add('done');
+  oldDot.querySelector('span').style.display = 'none';
+  oldDot.querySelector('i').style.display    = 'inline';
+  if (oldName) { oldName.classList.remove('active'); oldName.classList.add('done'); }
+
+  // Activate new
+  currentStep = n;
+  document.getElementById('step-' + n).classList.add('active');
+  var newDot  = document.getElementById('dot-' + n);
+  var newName = document.getElementById('sname-' + n);
+  newDot.classList.remove('done');
+  newDot.classList.add('active');
+  newDot.querySelector('span').style.display = 'inline';
+  newDot.querySelector('i').style.display    = 'none';
+  if (newName) { newName.classList.remove('done'); newName.classList.add('active'); }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (n === 3) { setTimeout(regCalc, 60); }
+}
+
+// ── Plan selection ───────────────────────────────────────
+function selectPlan(code) {
+  document.querySelectorAll('.plan-option').forEach(function(el) { el.classList.remove('selected'); });
+  var el = document.getElementById('po-' + code);
+  if (el) { el.classList.add('selected'); el.querySelector('input').checked = true; }
+  regCalc();
+}
+
+// ── Per-student cost calculator ───────────────────────────
+var REG_PLANS = {
+  {% for plan in plans %}
+  "{{ plan.code }}": { name: "{{ plan.name }}", rate: {{ plan.price_per_student_term|floatformat:0 }}, terms: {{ plan.terms_per_session }} }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+};
+
+function regCalc() {
+  var students  = parseInt(document.getElementById('reg-students').value) || 0;
+  var billingEl = document.getElementById('reg-billing');
+  var billing   = billingEl ? billingEl.value : 'TERM';
+  var checked   = document.querySelector('input[name="plan_code"]:checked');
+  var planCode  = checked ? checked.value : null;
+  var plan      = planCode ? REG_PLANS[planCode] : null;
+
+  var costBox = document.getElementById('reg-cost-box');
+  var prompt  = document.getElementById('reg-prompt');
+
+  if (!plan || students <= 0) {
+    if (costBox) costBox.style.display = 'none';
+    if (prompt)  prompt.style.display  = 'block';
+    return;
+  }
+
+  var total = billing === 'SESSION'
+    ? plan.rate * students * plan.terms
+    : plan.rate * students;
+
+  var breakdown = billing === 'SESSION'
+    ? students + ' students × ₦' + Number(plan.rate).toLocaleString('en-NG') + ' × ' + plan.terms + ' terms'
+    : students + ' students × ₦' + Number(plan.rate).toLocaleString('en-NG') + ' per term';
+
+  var periodLabel = billing === 'SESSION'
+    ? 'Per Session (' + plan.terms + ' Terms · ~270 days)'
+    : 'Per Term (~90 days)';
+
+  document.getElementById('reg-breakdown').textContent    = breakdown;
+  document.getElementById('reg-total').textContent        = '₦' + Math.round(total).toLocaleString('en-NG');
+  document.getElementById('reg-period-label').textContent = periodLabel;
+
+  if (costBox) costBox.style.display = 'block';
+  if (prompt)  prompt.style.display  = 'none';
+
+  var btn = document.getElementById('reg-submit-btn');
+  if (btn) {
+    btn.innerHTML = '<i class="bi bi-send-fill"></i> Submit &amp; Pay ₦'
+                  + Math.round(total).toLocaleString('en-NG') + ' →';
+  }
+}
+
+// ── Subdomain availability check ─────────────────────────
+var subTimer;
+var subInput  = document.getElementById('subdomainInput');
+var subStatus = document.getElementById('subdomainStatus');
+
+subInput.addEventListener('input', function() {
+  clearTimeout(subTimer);
+  var val = subInput.value.trim();
+  if (!val) { subStatus.textContent = ''; subStatus.className = 'subdomain-status'; return; }
+  subStatus.className = 'subdomain-status checking';
+  subStatus.innerHTML = '<i class="bi bi-arrow-repeat" style="animation:spin .7s linear infinite;display:inline-block;"></i> Checking…';
+  subTimer = setTimeout(async function() {
+    try {
+      var r = await fetch('/api/check-subdomain/?subdomain=' + encodeURIComponent(val));
+      var d = await r.json();
+      subStatus.className = 'subdomain-status ' + (d.available ? 'ok' : 'err');
+      subStatus.innerHTML = '<i class="bi ' + (d.available ? 'bi-check-circle-fill' : 'bi-x-circle-fill') + '"></i> ' + d.message;
+    } catch(e) {
+      subStatus.textContent = '';
+      subStatus.className = 'subdomain-status';
+    }
+  }, 500);
+});
+
+// ── On server errors, jump to the right step ─────────────
+{% if errors %}
+  {% if errors.school_name or errors.subdomain %}
+    /* already on step 1 */
+  {% elif errors.contact_name or errors.contact_email or errors.contact_phone %}
+    goStep(2);
+  {% endif %}
+{% endif %}
+</script>
+</body>
+</html>

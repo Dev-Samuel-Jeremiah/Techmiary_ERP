@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Payment Failed | Techmiary ERP</title>
+  <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css" rel="stylesheet">
+  <style>
+    :root{--navy:#050c1a;--panel:#0f1e38;--border:rgba(255,255,255,.08);--gold:#e8b84b;--red:#f87171;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--navy);color:#dde4f0;
+         min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+    .card{max-width:460px;width:100%;background:var(--panel);border:1px solid var(--border);
+          border-radius:20px;padding:2.5rem;text-align:center;}
+    .icon{width:72px;height:72px;background:rgba(248,113,113,.08);border:2px solid rgba(248,113,113,.2);
+          border-radius:50%;display:flex;align-items:center;justify-content:center;
+          margin:0 auto 1.5rem;font-size:2rem;color:var(--red);}
+    h1{font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:.5rem;}
+    .sub{color:rgba(255,255,255,.45);font-size:.88rem;line-height:1.7;margin-bottom:1.5rem;}
+    .err{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.18);border-radius:10px;
+         padding:.9rem 1rem;font-size:.84rem;color:var(--red);margin-bottom:1.5rem;}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.8rem 1.5rem;border-radius:10px;
+         font-size:.9rem;font-weight:700;text-decoration:none;width:100%;justify-content:center;margin-bottom:.75rem;}
+    .btn-gold{background:linear-gradient(135deg,var(--gold),#c8901a);color:#000;}
+    .btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:#dde4f0;}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="icon"><i class="ph ph-x"></i></div>
+  <h1>Payment Failed</h1>
+  <p class="sub">Your registration was saved but the payment could not be confirmed. Please try again.</p>
+  {% if error %}<div class="err"><i class="ph ph-warning-circle"></i> {{ error }}</div>{% endif %}
+  <a href="/register/" class="btn btn-gold"><i class="ph ph-arrow-counter-clockwise"></i> Try Again</a>
+  <a href="/" class="btn btn-ghost"><i class="ph ph-house"></i> Back to Homepage</a>
+  <p style="font-size:.78rem;color:rgba(255,255,255,.3);margin-top:.75rem;">
+    Need help? <a href="mailto:support@titmiary.edu.ng" style="color:var(--gold);">support@titmiary.edu.ng</a>
+  </p>
+</div>
+</body>
+</html>

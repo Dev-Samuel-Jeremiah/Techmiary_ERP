@@ -1,0 +1,141 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Login Details Notification{% endblock %}
+{% block content %}
+<style>
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:18px;}
+.sec{font-size:.93rem;font-weight:800;color:#1e293b;margin-bottom:14px;}
+.tbl{width:100%;border-collapse:collapse;font-size:.83rem;}
+.tbl th{background:#f8fafc;padding:8px 12px;text-align:left;font-weight:700;color:#475569;font-size:.71rem;text-transform:uppercase;}
+.tbl td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+.badge{display:inline-flex;padding:3px 9px;border-radius:99px;font-size:.71rem;font-weight:700;}
+.bg{background:#dcfce7;color:#166534;} .bb{background:#dbeafe;color:#1e40af;} .ba{background:#fef3c7;color:#92400e;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:9px;font-size:.83rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;text-decoration:none;}
+.btn-g{background:#16a34a;color:#fff;} .btn-b{background:#2563eb;color:#fff;} .btn-ghost{background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0;}
+.fg{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
+.fg label{font-size:.77rem;font-weight:700;color:#475569;}
+.fg input,.fg select{padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.87rem;font-family:inherit;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+@media(max-width:768px){.g2{grid-template-columns:1fr;}}
+</style>
+
+{% if messages %}{% for m in messages %}
+<div style="padding:10px 14px;border-radius:9px;margin-bottom:10px;font-weight:600;font-size:.86rem;
+  {% if m.tags == 'success' %}background:#dcfce7;color:#166534;border-left:4px solid #16a34a;
+  {% elif m.tags == 'error' %}background:#fee2e2;color:#991b1b;border-left:4px solid #dc2626;
+  {% else %}background:#dbeafe;color:#1e40af;border-left:4px solid #2563eb;{% endif %}">{{ m }}</div>
+{% endfor %}{% endif %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="font-size:1.3rem;font-weight:900;color:#1e293b;margin:0;">Login Details Notification</h2>
+    <p style="color:#64748b;font-size:.82rem;margin-top:3px;">
+      Send portal username & login info to parents via Email and/or SMS
+    </p>
+  </div>
+  <a href="{% url 'communications:dashboard' %}" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Dashboard</a>
+</div>
+
+<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:.83rem;color:#713f12;">
+  <i class="bi bi-lock-fill"></i>
+  <strong>Security Note:</strong> Passwords are only visible at account creation or reset time.
+  If sending to existing accounts, parents will receive their <em>username only</em> and
+  a prompt to contact school if they forgot their password.
+  Only newly created passwords can be included in the notification.
+</div>
+
+<div class="g2">
+
+  <!-- Bulk Send -->
+  <div class="card">
+    <div class="sec"><i class="bi bi-people-fill" style="color:#2563eb;"></i> Bulk — Send to Whole Class or All Students</div>
+    <form method="POST" style="display:flex;flex-direction:column;gap:14px;">
+      {% csrf_token %}
+      <input type="hidden" name="mode" value="bulk">
+      <div class="fg">
+        <label>Class (leave blank for all students)</label>
+        <select name="class_id">
+          <option value="">All Active Students</option>
+          {% for cls in classes %}<option value="{{ cls.id }}">{{ cls.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="fg">
+        <label>Channel</label>
+        <select name="channel">
+          <option value="EMAIL">Email Only</option>
+          <option value="BOTH">Email + SMS</option>
+          <option value="SMS">SMS Only</option>
+        </select>
+      </div>
+      <div style="background:#f0f9ff;border-radius:8px;padding:10px 12px;font-size:.8rem;color:#0369a1;">
+        <i class="bi bi-info-circle"></i>
+        Sends: Student's username (= admission number), Parent's username (= parent email),
+        and a prompt to contact school if they forgot their password.
+      </div>
+      <button type="submit" class="btn btn-b" style="justify-content:center;"
+        onclick="return confirm('Send login reminders to all selected parents?')">
+        <i class="bi bi-send-fill"></i> Send Bulk Login Reminders
+      </button>
+    </form>
+  </div>
+
+  <!-- Single Student -->
+  <div class="card">
+    <div class="sec"><i class="bi bi-person-fill" style="color:#16a34a;"></i> Individual — Send to One Student's Parent</div>
+    <form method="POST" style="display:flex;flex-direction:column;gap:14px;">
+      {% csrf_token %}
+      <input type="hidden" name="mode" value="single">
+      <div class="fg">
+        <label>Select Student *</label>
+        <select name="student_id" required>
+          <option value="">— Select student —</option>
+          {% for s in students %}
+          <option value="{{ s.id }}">{{ s.full_name }} ({{ s.admission_number }}) — {{ s.class_assigned.name|default:"No class" }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="fg">
+        <label>Channel</label>
+        <select name="channel">
+          <option value="EMAIL">Email Only</option>
+          <option value="BOTH">Email + SMS</option>
+          <option value="SMS">SMS Only</option>
+        </select>
+      </div>
+      <div style="background:#f0fdf4;border-radius:8px;padding:10px 12px;font-size:.8rem;color:#166534;">
+        <i class="bi bi-info-circle"></i>
+        For newly registered students: send right after registration — the system
+        will include their password. For existing accounts, only the username is sent.
+      </div>
+      <button type="submit" class="btn btn-g" style="justify-content:center;">
+        <i class="bi bi-send-fill"></i> Send Login Details
+      </button>
+    </form>
+  </div>
+
+</div>
+
+<!-- Preview of what the email looks like -->
+<div class="card">
+  <div class="sec"><i class="bi bi-eye-fill" style="color:#64748b;"></i> What the Email Looks Like</div>
+  <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;max-width:580px;">
+    <div style="background:#064e3b;padding:16px 20px;text-align:center;">
+      <div style="color:#fff;font-weight:800;font-size:1rem;">Techmiary Institute of Technology</div>
+      <div style="color:rgba(255,255,255,.8);font-size:.82rem;">Parent/Student Portal — Login Details</div>
+    </div>
+    <div style="padding:20px;font-size:.85rem;color:#1e293b;">
+      <p>Dear <em>Parent Name</em>,</p>
+      <p>Your child <strong>Student Name</strong> (Class Name) has been registered on our school portal.</p>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;margin:12px 0;">
+        <div style="font-weight:800;color:#065f46;margin-bottom:8px;">🎓 Student Login</div>
+        <div><span style="color:#64748b;">Username:</span> <code>ADM0001</code></div>
+        <div><span style="color:#64748b;">Password:</span> <code style="color:#16a34a;">xxxxxxxx</code></div>
+      </div>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px;margin:12px 0;">
+        <div style="font-weight:800;color:#1e40af;margin-bottom:8px;">👨‍👩‍👧 Parent Login</div>
+        <div><span style="color:#64748b;">Username:</span> <code>parent@email.com</code></div>
+        <div><span style="color:#64748b;">Password:</span> <code style="color:#2563eb;">xxxxxxxx</code></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

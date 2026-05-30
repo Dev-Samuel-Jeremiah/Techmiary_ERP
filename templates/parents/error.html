@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error | Techmiary Institute of Technology</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"Segoe UI",system-ui,Arial,sans-serif;background:linear-gradient(135deg,#f0fdf4,#dcfce7);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+    .box{background:#fff;border-radius:16px;padding:40px 32px;max-width:460px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.1);text-align:center;}
+    .icon{font-size:3.5rem;color:#dc2626;margin-bottom:16px;display:block;}
+    h1{font-size:1.3rem;font-weight:800;color:#1e293b;margin-bottom:8px;}
+    p{color:#64748b;font-size:.9rem;margin-bottom:24px;line-height:1.5;}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:11px 22px;border-radius:10px;font-weight:700;font-size:.88rem;text-decoration:none;background:#16a34a;color:#fff;transition:background .2s;}
+    .btn:hover{background:#15803d;}
+    .btn-ghost{background:#f1f5f9;color:#475569;margin-left:8px;}
+    .btn-ghost:hover{background:#e2e8f0;}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <i class="ph ph-warning-circle icon"></i>
+    <h1>Something went wrong</h1>
+    <p>{{ message|default:"An error occurred. Please try again or contact the school office." }}</p>
+    <a href="{% url 'users:parent_login' %}" class="btn"><i class="ph ph-arrow-left"></i> Back to Login</a>
+    <a href="{% url 'users:home' %}" class="btn btn-ghost">Home</a>
+  </div>
+</body>
+</html>

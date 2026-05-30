@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Messages</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+:root{
+  --ink:#f2f0eb;--surface:#1b1b24;--surface2:#21212e;--surface3:#272736;
+  --rim:rgba(255,255,255,.06);--rim2:rgba(255,255,255,.1);--rim3:rgba(255,255,255,.16);
+  --champagne:#c9a96e;--champagne-lt:#e8c98a;--champagne-dim:rgba(201,169,110,.15);
+  --slate:rgba(255,255,255,.38);--slate2:rgba(255,255,255,.58);
+  --green:#35c58b;--green-dim:rgba(53,197,139,.15);
+  --blue:#5ea2ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#14141b;color:var(--ink);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--rim2);padding:1rem 1.5rem;display:flex;align-items:center;gap:.75rem}
+.topbar a{color:var(--champagne);text-decoration:none;font-size:.9rem}
+.topbar h1{font-size:1.1rem;font-weight:600;flex:1}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1rem;border-radius:8px;font-size:.85rem;font-weight:500;cursor:pointer;text-decoration:none;border:none;transition:.2s}
+.btn-primary{background:var(--champagne);color:#111}
+.btn-primary:hover{background:var(--champagne-lt)}
+.layout{display:flex;height:calc(100vh - 53px)}
+.sidebar{width:340px;border-right:1px solid var(--rim2);background:var(--surface);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-search{padding:.75rem;border-bottom:1px solid var(--rim2)}
+.search-input{width:100%;background:var(--surface3);border:1px solid var(--rim3);color:var(--ink);border-radius:20px;padding:.5rem 1rem;font-family:inherit;font-size:.88rem;outline:none}
+.search-input::placeholder{color:var(--slate)}
+.conv-list{flex:1;overflow-y:auto}
+.conv-list::-webkit-scrollbar{width:4px}
+.conv-list::-webkit-scrollbar-thumb{background:var(--rim3);border-radius:4px}
+.conv-item{display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;cursor:pointer;text-decoration:none;color:var(--ink);border-bottom:1px solid var(--rim);transition:.15s;position:relative}
+.conv-item:hover{background:var(--surface2)}
+.conv-item.active{background:var(--champagne-dim);border-left:3px solid var(--champagne)}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--surface3);border:2px solid var(--rim3);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:600;color:var(--champagne);flex-shrink:0;position:relative}
+.online-dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--surface)}
+.conv-info{flex:1;min-width:0}
+.conv-name{font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-preview{font-size:.78rem;color:var(--slate2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.15rem}
+.conv-preview.unread{color:var(--ink);font-weight:500}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;flex-shrink:0}
+.conv-time{font-size:.72rem;color:var(--slate)}
+.unread-badge{background:var(--champagne);color:#111;font-size:.68rem;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.main-content{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.75rem;color:var(--slate)}
+.main-content i{font-size:3rem;color:var(--rim3)}
+.main-content p{font-size:.95rem}
+@media(max-width:600px){.sidebar{width:100%}.main-content{display:none}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/"><i class="bi bi-arrow-left"></i> Home</a>
+  <h1><i class="bi bi-chat-dots" style="color:var(--champagne)"></i> Messages</h1>
+  <a href="{% url 'chat:people' %}" class="btn btn-primary"><i class="bi bi-person-plus"></i> New Chat</a>
+</div>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-search">
+      <input class="search-input" id="searchInput" placeholder="Search conversations…" oninput="filterConvs(this.value)">
+    </div>
+    <div class="conv-list" id="convList">
+      {% for item in conv_data %}
+      <a href="{% url 'chat:conversation' item.conv.id %}" class="conv-item" data-name="{{ item.other.get_full_name|default:item.other.username|lower }}">
+        <div class="avatar" id="av-{{ item.other.id }}">
+          {{ item.other.first_name|first|upper }}{{ item.other.last_name|first|upper }}
+          <span class="online-dot" id="dot-{{ item.other.id }}" style="display:none"></span>
+        </div>
+        <div class="conv-info">
+          <div class="conv-name">{{ item.other.get_full_name|default:item.other.username }}</div>
+          <div class="conv-preview {% if item.unread %}unread{% endif %}">
+            {% if item.last %}
+              {% if item.last.sender == request.user %}You: {% endif %}{{ item.last.content|truncatechars:40 }}
+            {% else %}No messages yet{% endif %}
+          </div>
+        </div>
+        <div class="conv-meta">
+          {% if item.last %}<span class="conv-time">{{ item.last.sent_at|timesince|truncatewords:2 }}</span>{% endif %}
+          {% if item.unread %}<span class="unread-badge">{{ item.unread }}</span>{% endif %}
+        </div>
+      </a>
+      {% empty %}
+      <div style="padding:2rem;text-align:center;color:var(--slate)">
+        <i class="bi bi-chat-square-dots" style="font-size:2rem;display:block;margin-bottom:.5rem;color:var(--rim3)"></i>
+        No conversations yet.<br>
+        <a href="{% url 'chat:people' %}" style="color:var(--champagne)">Start chatting →</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="main-content">
+    <i class="bi bi-chat-heart"></i>
+    <p>Select a conversation or start a new one</p>
+    <a href="{% url 'chat:people' %}" class="btn btn-primary"><i class="bi bi-people"></i> Browse People</a>
+  </div>
+</div>
+
+<script>
+function filterConvs(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.conv-item').forEach(el => {
+    el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+  });
+}
+
+// Presence WebSocket
+const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+const presenceWS = new WebSocket(`${proto}://${location.host}/ws/presence/`);
+presenceWS.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  if (data.type === 'presence') {
+    const dot = document.getElementById(`dot-${data.user_id}`);
+    if (dot) dot.style.display = data.status === 'online' ? 'block' : 'none';
+  }
+};
+</script>
+</body>
+</html>

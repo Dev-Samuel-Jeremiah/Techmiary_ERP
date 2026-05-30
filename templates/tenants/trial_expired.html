@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trial Expired | {{ tenant.name }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root{--navy:#070d1e;--gold:#d4a843;--gold-dim:rgba(212,168,67,.12);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"DM Sans",sans-serif;background:var(--navy);min-height:100vh;
+         display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;}
+    .icon{font-size:3rem;color:var(--gold);margin-bottom:1.25rem;}
+    h1{font-family:"Syne",sans-serif;font-size:1.6rem;color:#fff;margin-bottom:.6rem;}
+    p{color:rgba(255,255,255,.5);max-width:400px;line-height:1.6;margin-bottom:1.75rem;}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.8rem 1.6rem;
+         border-radius:10px;background:linear-gradient(135deg,var(--gold),#aa7215);
+         color:#fff;font-size:.9rem;font-weight:600;text-decoration:none;
+         box-shadow:0 4px 16px rgba(212,168,67,.28);}
+    .btn:hover{opacity:.9;}
+  </style>
+</head>
+<body>
+  <div>
+    <div class="icon"><i class="ph ph-timer"></i></div>
+    <h1>Your free trial has ended</h1>
+    <p>
+      <strong style="color:#fff;">{{ tenant.name }}</strong>'s 14-day free trial expired on
+      <strong style="color:#fff;">{{ tenant.trial_ends|date:"d M Y" }}</strong>.
+      Subscribe to a plan to restore full access for your school.
+    </p>
+    <a href="{{ tenant.portal_url }}/subscription/upgrade/" class="btn">
+      <i class="ph ph-rocket-launch"></i> Choose a Plan
+    </a>
+  </div>
+</body>
+</html>

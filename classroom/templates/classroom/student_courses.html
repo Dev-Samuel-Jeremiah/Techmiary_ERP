@@ -1,0 +1,145 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Courses |Student Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
+    <style>
+        /* ---------- Base Styles ---------- */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background: #f0f4f8;
+            color: #1f2937;
+            transition: background 0.3s ease;
+        }
+
+        a { text-decoration: none; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            color: #1e3a8a;
+            margin-bottom: 30px;
+        }
+
+        /* ---------- Top Navigation ---------- */
+        .top-nav {
+            margin-bottom: 20px;
+        }
+
+        .top-nav a {
+            font-weight: 600;
+            color: #2563eb;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+
+        .top-nav a:hover {
+            color: #1e40af;
+            transform: translateX(-3px);
+        }
+
+        /* ---------- Courses Grid ---------- */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* ---------- Course Card ---------- */
+        .course-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .course-card:hover {
+            transform: translateY(-6px) rotateX(2deg);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+
+        .course-card h3 {
+            font-size: 1.3em;
+            color: #2563eb;
+            margin-bottom: 12px;
+        }
+
+        .course-card p {
+            font-size: 0.95em;
+            color: #475569;
+            margin-bottom: 18px;
+        }
+
+        /* ---------- Buttons ---------- */
+        .course-card a {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            text-align: center;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .course-card a:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-2px);
+        }
+
+        /* ---------- Empty State ---------- */
+        .empty {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            color: #64748b;
+            font-size: 1em;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="top-nav">
+        <a href="/">← Back to Home</a>
+        <a href="{% url 'liveclass:student_live_classes' %}" style="color:#35c58b"><i class="bi bi-broadcast"></i> Live Classes</a>
+    </div>
+
+    <h1>My Courses</h1>
+
+    {% if courses %}
+        <div class="courses-grid">
+            {% for course in courses %}
+                <div class="course-card">
+                    <div>
+                        <h3>{{ course.title }}</h3>
+                        <p>{{ course.description|truncatewords:25 }}</p>
+                    </div>
+                    <a href="{% url 'classroom:student_course_content' course.id %}">
+                        Continue Course
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty">
+            <p>You are not enrolled in any course yet.</p>
+        </div>
+    {% endif %}
+</div>
+</body>
+</html>

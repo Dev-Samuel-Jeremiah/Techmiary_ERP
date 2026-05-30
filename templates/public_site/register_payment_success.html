@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Payment Successful | Techmiary ERP</title>
+  <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css" rel="stylesheet">
+  <style>
+    :root{--navy:#050c1a;--panel:#0f1e38;--border:rgba(255,255,255,.08);--gold:#e8b84b;--green:#34d399;--blue:#4f8ef7;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--navy);color:#dde4f0;
+         min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+    .card{max-width:540px;width:100%;background:var(--panel);border:1px solid var(--border);
+          border-radius:20px;padding:2.5rem;}
+    .icon{width:76px;height:76px;background:rgba(52,211,153,.1);border:2px solid rgba(52,211,153,.25);
+          border-radius:50%;display:flex;align-items:center;justify-content:center;
+          margin:0 auto 1.5rem;font-size:2.2rem;color:var(--green);}
+    h1{font-size:1.7rem;font-weight:800;color:#fff;margin-bottom:.5rem;text-align:center;}
+    .sub{color:rgba(255,255,255,.5);font-size:.88rem;line-height:1.7;margin-bottom:1.75rem;text-align:center;}
+    .detail-box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;
+                padding:1.25rem;margin-bottom:1.5rem;}
+    .row{display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;
+         font-size:.875rem;border-bottom:1px solid rgba(255,255,255,.05);}
+    .row:last-child{border:none;}
+    .dl{color:rgba(255,255,255,.4);}
+    .dv{color:#fff;font-weight:600;}
+
+    /* Portal box */
+    .portal-box{background:rgba(79,142,247,.07);border:1px solid rgba(79,142,247,.2);
+                border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;}
+    .portal-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+                  color:rgba(79,142,247,.7);margin-bottom:.6rem;}
+    .portal-url{font-size:1rem;font-weight:700;color:var(--blue);word-break:break-all;margin-bottom:.4rem;}
+    .portal-note{font-size:.78rem;color:rgba(255,255,255,.35);}
+
+    .steps{margin-bottom:1.5rem;}
+    .step{display:flex;gap:.85rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.05);}
+    .step:last-child{border:none;}
+    .step-num{width:26px;height:26px;border-radius:50%;background:var(--gold);color:#000;
+              font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+    .step-num.done{background:var(--green);}
+    .step-body strong{display:block;font-size:.88rem;color:#fff;margin-bottom:.1rem;}
+    .step-body span{font-size:.78rem;color:rgba(255,255,255,.4);}
+
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.8rem 1.5rem;border-radius:10px;
+         font-size:.9rem;font-weight:700;text-decoration:none;width:100%;justify-content:center;margin-bottom:.75rem;}
+    .btn-gold{background:linear-gradient(135deg,var(--gold),#c8901a);color:#000;}
+    .btn-ghost{background:rgba(255,255,255,.06);border:1px solid var(--border);color:#dde4f0;}
+    .confetti{text-align:center;font-size:2.5rem;margin-bottom:.75rem;}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="confetti">🎉</div>
+  <div class="icon"><i class="ph ph-check"></i></div>
+  <h1>Payment Confirmed!</h1>
+  <p class="sub">
+    <strong style="color:#fff;">{{ school_name }}</strong> has been registered and payment confirmed.
+    {% if tenant %}Your school portal is now <strong style="color:var(--green);">ACTIVE</strong>.{% else %}Your portal will be activated within 24 hours.{% endif %}
+  </p>
+
+  <!-- Payment summary -->
+  <div class="detail-box">
+    <div class="row"><span class="dl">School</span><span class="dv">{{ school_name }}</span></div>
+    <div class="row"><span class="dl">Plan</span><span class="dv">{{ plan_name }}</span></div>
+    {% if student_count %}<div class="row"><span class="dl">Students Billed</span><span class="dv">{{ student_count }}</span></div>{% endif %}
+    {% if period_label %}<div class="row"><span class="dl">Period</span><span class="dv">{{ period_label }}</span></div>{% endif %}
+    {% if sub %}<div class="row"><span class="dl">Valid Until</span><span class="dv">{{ sub.ends_at|date:"d M Y" }}</span></div>{% endif %}
+    <div class="row"><span class="dl">Amount Paid</span><span class="dv">₦{{ amount|floatformat:0 }}</span></div>
+    <div class="row"><span class="dl">Reference</span><span class="dv" style="font-size:.78rem;font-family:monospace;">{{ ref }}</span></div>
+    <div class="row"><span class="dl">Status</span><span class="dv" style="color:var(--green);">✓ Confirmed</span></div>
+  </div>
+
+  <!-- Portal URL (if tenant was activated) -->
+  {% if tenant %}
+  <div class="portal-box">
+    <div class="portal-label"><i class="ph ph-globe"></i> Your School Portal</div>
+    <div class="portal-url">{{ tenant.portal_url }}</div>
+    <div class="portal-note">
+      Login credentials have been sent to <strong style="color:#fff;">{{ tenant.email }}</strong>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- What happens next -->
+  <div class="steps">
+    <div class="step">
+      <div class="step-num done">✓</div>
+      <div class="step-body">
+        <strong>Payment Confirmed</strong>
+        <span>₦{{ amount|floatformat:0 }} received and verified by Paystack.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num {% if tenant %}done{% endif %}">{% if tenant %}✓{% else %}2{% endif %}</div>
+      <div class="step-body">
+        <strong>Portal {% if tenant %}Activated{% else %}Being Activated{% endif %}</strong>
+        <span>{% if tenant %}Your school portal is live at {{ tenant.portal_url }}{% else %}Our team will activate your portal within 24 hours.{% endif %}</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">{% if tenant %}3{% else %}3{% endif %}</div>
+      <div class="step-body">
+        <strong>Login &amp; Set Up</strong>
+        <span>Add your classes, staff and students. Guided onboarding included.</span>
+      </div>
+    </div>
+  </div>
+
+  {% if tenant %}
+  <a href="{{ tenant.portal_url }}" class="btn btn-gold">
+    <i class="ph ph-sign-in"></i> Go to Your School Portal
+  </a>
+  {% endif %}
+  <a href="/" class="btn btn-ghost">
+    <i class="ph ph-house"></i> Back to Homepage
+  </a>
+  <p style="font-size:.75rem;color:rgba(255,255,255,.25);margin-top:.75rem;text-align:center;">
+    Questions? <a href="mailto:support@titmiary.edu.ng" style="color:var(--gold);">support@titmiary.edu.ng</a>
+    &nbsp;·&nbsp; WhatsApp <a href="https://wa.me/2347010996154" style="color:var(--gold);">07010996154</a>
+  </p>
+</div>
+</body>
+</html>

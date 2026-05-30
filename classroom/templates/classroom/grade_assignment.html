@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'images/logo.png' %}" type="image/png">
+    <title>Grade Assignment</title>
+</head>
+<body>
+    <style>
+/* ---------- Container ---------- */
+.grading-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px 25px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    font-family: 'Inter', Arial, sans-serif;
+    perspective: 1000px;
+    overflow: visible;
+    transition: transform 0.3s ease;
+}
+
+.grading-container:hover {
+    transform: translateY(-3px) scale(1.01);
+}
+
+/* ---------- Headings ---------- */
+.grading-container h1 {
+    color: #1e3a8a;
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.grading-container h3 {
+    color: #2563eb;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+/* ---------- Answers ---------- */
+.answer-box {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.answer-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    background: #f0f4ff;
+}
+
+/* ---------- File Button ---------- */
+.file-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.file-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+}
+
+/* ---------- Form Elements ---------- */
+.form-control {
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: #fff;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .grading-container {
+        padding: 20px 15px;
+    }
+}
+</style>
+
+
+<div class="grading-container">
+    <h1>Grading {{ submission.student.get_full_name }} - {{ assignment.title }}</h1>
+
+    <h3>Answers:</h3>
+    {% for ans in answers %}
+    <div class="answer-box">
+        <strong>Q{{ forloop.counter }}:</strong> {{ ans.question.question_text }}<br>
+        <strong>Answer:</strong> {{ ans.answer_text }}
+    </div>
+    {% endfor %}
+
+    <h3>File Submission:</h3>
+    {% if submission.file %}
+    <a href="{{ submission.file.url }}" target="_blank" class="file-btn">Download Submitted File</a>
+    {% else %}
+    <p style="color:#6b7280;">No file submitted.</p>
+    {% endif %}
+
+    <hr>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="grade">Grade</label>
+            <select name="grade" id="grade" class="form-control">
+                {% for g in grade_options %}
+                    <option value="{{ g }}" {% if submission.grade|stringformat:"s" == g|stringformat:"s" %}selected{% endif %}>
+                        {{ g }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="feedback">Feedback</label>
+            <textarea name="feedback" id="feedback" rows="4" class="form-control">{{ submission.feedback }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Grade</button>
+        <a href="{% url 'classroom:grade_assignment' assignment.id %}" class="btn btn-secondary">Back</a>
+    </form>
+</div>
+
+    
+</body>
+</html>
+
+
+
+
+
